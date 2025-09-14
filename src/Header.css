@@ -1,0 +1,47 @@
+.encabezado {
+  background-color: #e53935;
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column; 
+  justify-content: center;
+  align-items: center;
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  padding-bottom: 10px; 
+}
+
+
+.menu-navegacion {
+  background-color: white;
+  width: 100%;
+  padding: 10px 0;
+  border-top: 1px solid #ccc;
+  border-bottom: 2px solid #e53935;
+}
+
+.menu-navegacion ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-navegacion li {
+  margin: 0 40px;
+}
+
+.menu-navegacion a {
+  text-decoration: none;
+  color: black;
+  font-weight: 500;
+}
+
+.menu-navegacion a:hover {
+  color: #e53935;
+}
