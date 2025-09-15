@@ -1,0 +1,103 @@
+.contenedor-qsomos {
+  padding: 20px;
+}
+
+.contenido p {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.flipboxes {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.flipbox {
+  border: 2px solid #e53935;
+  padding: 20px;
+  width: 200px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: transform 0.3s;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.flipbox h3 {
+  font-size: 45px;  
+  font-weight: bold;
+  margin-top: 50px;
+  color: #e53935; 
+  display: block; 
+}
+
+.flipbox p {
+  font-size: 16px;
+  margin-top: 10px;
+  display: none; 
+}
+
+.flipbox.show p {
+  display: block; 
+}
+
+.flipbox.show h3 {
+  display: none; 
+}
+
+.flipbox:hover {
+  transform: scale(1.05);
+}
+
+.franja-roja {
+  background-color: #9c1613;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.nuestros-valores {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.nuestros-valores h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #e53935;
+  margin-bottom: 5px;
+}
+
+.valores-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  flex-wrap: wrap; 
+}
+
+.valor {
+  width: 200px;
+  height: 140px;
+  text-align: center;
+  padding: 20px;
+  margin: 10px;
+  border: 2px solid #e53935;
+  border-radius: 10px;
+}
+
+.valor img {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 0px;
+}
+
+.valor p {
+  font-size: 16px;
+  color: #333;
+}
