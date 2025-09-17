@@ -35,6 +35,17 @@ db.run(`
   }
 });
 
+app.get('/usuarios', (req, res) => {
+  const query = 'SELECT * FROM usuarios';
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      return res.status(500).send('Error al obtener los usuarios');
+    }
+    res.status(200).json(rows);
+  });
+});
+
+
 // Ruta para registrar un nuevo usuario
 app.post('/registro', (req, res) => {
   const { email, password } = req.body;
