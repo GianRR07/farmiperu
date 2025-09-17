@@ -1,6 +1,7 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const cors = require('cors'); // Importar cors
+import express from 'express';
+import sqlite3 from 'sqlite3';
+import cors from 'cors';
+
 const app = express();
 const port = 3001;
 
@@ -10,7 +11,7 @@ app.use(cors());
 // Middleware para manejar JSON
 app.use(express.json());
 
-// Conectar con la base de datos SQLite
+// No necesitas llamar a verbose() para crear la base, solo instancias Database directamente
 const db = new sqlite3.Database('./database.db', (err) => {
   if (err) {
     console.error('Error al conectar con la base de datos', err);
@@ -45,6 +46,9 @@ app.post('/registro', (req, res) => {
   const query = 'INSERT INTO usuarios (email, password) VALUES (?, ?)';
   db.run(query, [email, password], function (err) {
     if (err) {
+      if (err.message.includes('UNIQUE constraint failed')) {
+        return res.status(409).send('El usuario ya existe');
+      }
       return res.status(500).send('Error al registrar el usuario');
     }
     res.status(201).send({ message: 'Usuario registrado correctamente' });
