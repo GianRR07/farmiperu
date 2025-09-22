@@ -5,7 +5,7 @@ import Productos from "./pages/Productos";
 import Login from "./pages/Login";
 import CarritoCompras from "./pages/CarritoCompras";
 import QuienesSomos from './pages/QuienesSomos';
-import Contacto from './pages/Contacto'; // 🔥 IMPORTANTE: Asegúrate de tener este archivo
+import Contacto from './pages/Contacto'; 
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";

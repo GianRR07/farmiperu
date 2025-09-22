@@ -6,8 +6,7 @@ export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [cartItems, setCartItems] = useState([]); // Vacío
-
+  const [cartItems, setCartItems] = useState([]); 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
