@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const [nombre, setNombre] = useState('');
@@ -11,10 +12,10 @@ export default function Login() {
   const [dniError, setDniError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordHint, setPasswordHint] = useState('');
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     if (name === 'nombre') setNombre(value);
     else if (name === 'dni') {
       setDni(value);
@@ -37,28 +38,28 @@ export default function Login() {
   };
 
   const evaluarContraseña = (pwd) => {
-  const tieneNumero = /\d/.test(pwd);
-  const tieneSimbolo = /[^A-Za-z0-9]/.test(pwd);
-  const tieneMinimo = pwd.length >= 5;
+    const tieneNumero = /\d/.test(pwd);
+    const tieneSimbolo = /[^A-Za-z0-9]/.test(pwd);
+    const tieneMinimo = pwd.length >= 5;
 
-  if (tieneMinimo && tieneNumero && tieneSimbolo) {
-    setPasswordHint('Contraseña segura');
-  } else if (!tieneMinimo && !tieneNumero && !tieneSimbolo) {
-    setPasswordHint('Coloca mínimo 5 caracteres, 1 número y un símbolo');
-  } else if (!tieneMinimo && !tieneNumero && tieneSimbolo) {
-    setPasswordHint('Agregale un número y mínimo 5 caracteres');
-  } else if (!tieneMinimo && tieneNumero && !tieneSimbolo) {
-    setPasswordHint('Agregale un símbolo y mínimo 5 caracteres');
-  } else if (tieneMinimo && !tieneNumero && !tieneSimbolo) {
-    setPasswordHint('Agregale un número y un símbolo');
-  } else if (tieneMinimo && tieneNumero && !tieneSimbolo) {
-    setPasswordHint('Agregale un símbolo');
-  } else if (tieneMinimo && !tieneNumero && tieneSimbolo) {
-    setPasswordHint('Agregale un número');
-  } else {
-    setPasswordHint('Coloca mínimo 5 caracteres, 1 número y un símbolo');
-  }
-};
+    if (tieneMinimo && tieneNumero && tieneSimbolo) {
+      setPasswordHint('Contraseña segura');
+    } else if (!tieneMinimo && !tieneNumero && !tieneSimbolo) {
+      setPasswordHint('Coloca mínimo 5 caracteres, 1 número y un símbolo');
+    } else if (!tieneMinimo && !tieneNumero && tieneSimbolo) {
+      setPasswordHint('Agregale un número y mínimo 5 caracteres');
+    } else if (!tieneMinimo && tieneNumero && !tieneSimbolo) {
+      setPasswordHint('Agregale un símbolo y mínimo 5 caracteres');
+    } else if (tieneMinimo && !tieneNumero && !tieneSimbolo) {
+      setPasswordHint('Agregale un número y un símbolo');
+    } else if (tieneMinimo && tieneNumero && !tieneSimbolo) {
+      setPasswordHint('Agregale un símbolo');
+    } else if (tieneMinimo && !tieneNumero && tieneSimbolo) {
+      setPasswordHint('Agregale un número');
+    } else {
+      setPasswordHint('Coloca mínimo 5 caracteres, 1 número y un símbolo');
+    }
+  };
 
   const validarRegistro = () => {
     if (!nombre.trim()) return 'El nombre es obligatorio';
@@ -84,8 +85,23 @@ export default function Login() {
       const data = isLogin ? { email, password } : { nombre, dni, email, password };
       const response = await axios.post(url, data);
 
-      setMessage(isLogin ? 'Iniciaste sesión con éxito' : 'Usuario registrado correctamente');
-      setTimeout(() => setMessage(''), 4000);
+      // Aquí modificaciones ----------------
+      if (isLogin) {
+        const { nombre: nombreUsuario, rol } = response.data;
+        // guardamos nombre y rol en localStorage
+        localStorage.setItem('nombreUsuario', nombreUsuario);
+        localStorage.setItem('rolUsuario', rol);
+        setMessage('Iniciaste sesión con éxito');
+
+        // esperamos un poco si quieres, luego rediriges
+        setTimeout(() => {
+          navigate('/cliente');
+        }, 1000);
+      } else {
+        setMessage('Usuario registrado correctamente');
+        // quizá redirigir al login
+        setTimeout(() => setMessage(''), 4000);
+      }
     } catch (error) {
       if (error.response) setMessage(error.response.data || 'Error al procesar solicitud');
       else setMessage('Error de conexión. Intenta más tarde');

@@ -17,24 +17,62 @@ const db = new sqlite3.Database('./database.db', (err) => {
   }
 });
 
-// Crear tabla de usuarios con los nuevos campos
-db.run(`
-  CREATE TABLE IF NOT EXISTS usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT,
-    dni TEXT UNIQUE,
-    email TEXT UNIQUE,
-    password TEXT
-  )
-`, (err) => {
+// Eliminar la tabla si existe y crearla nuevamente
+db.run(`DROP TABLE IF EXISTS usuarios`, (err) => {
   if (err) {
-    console.error('Error al crear la tabla', err);
+    console.error('Error al eliminar la tabla', err);
   } else {
-    console.log('Tabla de usuarios creada o ya existe');
+    console.log('Tabla usuarios eliminada (si existía)');
   }
+
+  // Crear tabla con el nuevo campo 'rol'
+  db.run(`
+    CREATE TABLE IF NOT EXISTS usuarios (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nombre TEXT,
+      dni TEXT UNIQUE,
+      email TEXT UNIQUE,
+      password TEXT,
+      rol TEXT DEFAULT 'cliente'
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error al crear la tabla', err);
+    } else {
+      console.log('Tabla de usuarios creada correctamente');
+
+      // Crear usuario admin
+      const insertAdmin = `
+        INSERT OR IGNORE INTO usuarios (nombre, dni, email, password, rol)
+        VALUES ('admin', '11111111', 'admin@admin.com', 'admin1.', 'admin')
+      `;
+
+      db.run(insertAdmin, (err) => {
+        if (err) {
+          console.error('Error al insertar el usuario admin', err);
+        } else {
+          console.log('Usuario admin creado correctamente');
+        }
+      });
+
+      // Crear usuario de prueba
+      const insertPrueba = `
+        INSERT OR IGNORE INTO usuarios (nombre, dni, email, password, rol)
+        VALUES ('prueba', '22222222', 'prueba@prueba.com', 'prueba1.', 'cliente')
+      `;
+
+      db.run(insertPrueba, (err) => {
+        if (err) {
+          console.error('Error al insertar el usuario de prueba', err);
+        } else {
+          console.log('Usuario de prueba creado correctamente');
+        }
+      });
+    }
+  });
 });
 
-// Obtener todos los usuarios (para pruebas o administración)
+// Obtener todos los usuarios
 app.get('/usuarios', (req, res) => {
   const query = 'SELECT * FROM usuarios';
   db.all(query, [], (err, rows) => {
@@ -45,16 +83,18 @@ app.get('/usuarios', (req, res) => {
   });
 });
 
-// Ruta de registro con validación de todos los campos
+// Ruta de registro
 app.post('/registro', (req, res) => {
-  const { nombre, dni, email, password } = req.body;
+  const { nombre, dni, email, password, rol } = req.body;
 
   if (!nombre || !dni || !email || !password) {
     return res.status(400).send('Todos los campos son requeridos');
   }
 
-  const query = 'INSERT INTO usuarios (nombre, dni, email, password) VALUES (?, ?, ?, ?)';
-  db.run(query, [nombre, dni, email, password], function (err) {
+  const rolFinal = rol || 'cliente';
+
+  const query = 'INSERT INTO usuarios (nombre, dni, email, password, rol) VALUES (?, ?, ?, ?, ?)';
+  db.run(query, [nombre, dni, email, password, rolFinal], function (err) {
     if (err) {
       if (err.message.includes('UNIQUE constraint failed: usuarios.email')) {
         return res.status(409).send('El correo ya está registrado');
@@ -69,7 +109,7 @@ app.post('/registro', (req, res) => {
   });
 });
 
-// Ruta de login
+// ✅ Ruta de login actualizada para devolver más info
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -87,16 +127,23 @@ app.post('/login', (req, res) => {
       return res.status(401).send('Credenciales incorrectas');
     }
 
-    res.status(200).send({ message: 'Login exitoso' });
+    // ✅ Devuelve nombre, rol y mensaje
+    res.status(200).json({
+      message: 'Login exitoso',
+      nombre: row.nombre,
+      rol: row.rol,
+      dni: row.dni, // opcional
+      email: row.email // opcional
+    });
   });
 });
 
-// Iniciar servidor
-
+// Ruta de prueba
 app.get('/', (req, res) => {
   res.send('¡Backend funcionando correctamente!');
 });
 
+// Iniciar servidor
 app.listen(port, () => {
   console.log(`Servidor Express corriendo en http://localhost:${port}`);
 });
