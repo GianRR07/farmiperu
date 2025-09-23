@@ -30,7 +30,7 @@ export default function LoginCliente() {
           <div>
             <h2 className="text-xl font-semibold mb-2">👤 Mi Perfil</h2>
             <p><strong>Nombre:</strong> {nombreUsuario}</p>
-            <p><strong>Email:</strong> usuario@email.com</p>
+            <p><strong>Email:</strong> usuariao@email.com</p>
             <p><strong>DNI:</strong> ********</p>
           </div>
         );
