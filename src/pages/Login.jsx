@@ -2,36 +2,94 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 export default function Login() {
+  const [nombre, setNombre] = useState('');
+  const [dni, setDni] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [message, setMessage] = useState('');
+  const [dniError, setDniError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordHint, setPasswordHint] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'email') setEmail(value);
-    else if (name === 'password') setPassword(value);
+
+    if (name === 'nombre') setNombre(value);
+    else if (name === 'dni') {
+      setDni(value);
+      if (!/^\d{8}$/.test(value)) {
+        setDniError('Coloca tu DNI completo');
+      } else {
+        setDniError('');
+      }
+    } else if (name === 'email') {
+      setEmail(value);
+      if (!value.includes('@') || !value.includes('.')) {
+        setEmailError('Coloca un correo electrónico válido');
+      } else {
+        setEmailError('');
+      }
+    } else if (name === 'password') {
+      setPassword(value);
+      evaluarContraseña(value);
+    }
+  };
+
+  const evaluarContraseña = (pwd) => {
+  const tieneNumero = /\d/.test(pwd);
+  const tieneSimbolo = /[^A-Za-z0-9]/.test(pwd);
+  const tieneMinimo = pwd.length >= 5;
+
+  if (tieneMinimo && tieneNumero && tieneSimbolo) {
+    setPasswordHint('Contraseña segura');
+  } else if (!tieneMinimo && !tieneNumero && !tieneSimbolo) {
+    setPasswordHint('Coloca mínimo 5 caracteres, 1 número y un símbolo');
+  } else if (!tieneMinimo && !tieneNumero && tieneSimbolo) {
+    setPasswordHint('Agregale un número y mínimo 5 caracteres');
+  } else if (!tieneMinimo && tieneNumero && !tieneSimbolo) {
+    setPasswordHint('Agregale un símbolo y mínimo 5 caracteres');
+  } else if (tieneMinimo && !tieneNumero && !tieneSimbolo) {
+    setPasswordHint('Agregale un número y un símbolo');
+  } else if (tieneMinimo && tieneNumero && !tieneSimbolo) {
+    setPasswordHint('Agregale un símbolo');
+  } else if (tieneMinimo && !tieneNumero && tieneSimbolo) {
+    setPasswordHint('Agregale un número');
+  } else {
+    setPasswordHint('Coloca mínimo 5 caracteres, 1 número y un símbolo');
+  }
+};
+
+  const validarRegistro = () => {
+    if (!nombre.trim()) return 'El nombre es obligatorio';
+    if (!/^\d{8}$/.test(dni)) return 'Coloca tu DNI completo';
+    if (!email.includes('@') || !email.includes('.')) return 'Correo no válido';
+    return null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!isLogin) {
+      const error = validarRegistro();
+      if (error) {
+        setMessage(error);
+        setTimeout(() => setMessage(''), 4000);
+        return;
+      }
+    }
+
     try {
-      if (isLogin) {
-        const response = await axios.post('http://localhost:3001/login', { email, password });
-        setMessage('Iniciaste sesión con éxito');
-      } else {
-        const response = await axios.post('http://localhost:3001/registro', { email, password });
-        setMessage('Ahora puedes iniciar sesión');
-      }
-      setTimeout(() => setMessage(''), 5000);
+      const url = isLogin ? 'http://localhost:3001/login' : 'http://localhost:3001/registro';
+      const data = isLogin ? { email, password } : { nombre, dni, email, password };
+      const response = await axios.post(url, data);
+
+      setMessage(isLogin ? 'Iniciaste sesión con éxito' : 'Usuario registrado correctamente');
+      setTimeout(() => setMessage(''), 4000);
     } catch (error) {
-      if (error.response) {
-        setMessage(error.response.data || 'Ocurrió un error. Intenta de nuevo');
-      } else {
-        setMessage('Error de conexión. Intenta más tarde');
-      }
-      setTimeout(() => setMessage(''), 5000);
+      if (error.response) setMessage(error.response.data || 'Error al procesar solicitud');
+      else setMessage('Error de conexión. Intenta más tarde');
+      setTimeout(() => setMessage(''), 4000);
     }
   };
 
@@ -41,8 +99,45 @@ export default function Login() {
         
         {/* Formulario */}
         <div className="w-full md:w-1/2 p-8">
-          <h2 className="text-2xl font-bold mb-6 text-red-600">{isLogin ? 'Iniciar sesión' : 'Registrarse'}</h2>
+          <h2 className="text-2xl font-bold mb-6 text-red-600">
+            {isLogin ? 'Iniciar sesión' : 'Registrarse'}
+          </h2>
+
           <form onSubmit={handleSubmit} className="space-y-5">
+            {!isLogin && (
+              <>
+                <div>
+                  <label htmlFor="nombre" className="block mb-2 font-semibold text-gray-700">Nombre:</label>
+                  <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    value={nombre}
+                    onChange={handleInputChange}
+                    placeholder="Ingresa tu nombre"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="dni" className="block mb-2 font-semibold text-gray-700">DNI:</label>
+                  <input
+                    type="text"
+                    id="dni"
+                    name="dni"
+                    value={dni}
+                    onChange={handleInputChange}
+                    placeholder="8 dígitos"
+                    required
+                    maxLength={8}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                  {dniError && <p className="text-red-600 text-sm mt-1">{dniError}</p>}
+                </div>
+              </>
+            )}
+
             <div>
               <label htmlFor="email" className="block mb-2 font-semibold text-gray-700">Correo electrónico:</label>
               <input
@@ -55,7 +150,9 @@ export default function Login() {
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
               />
+              {emailError && <p className="text-red-600 text-sm mt-1">{emailError}</p>}
             </div>
+
             <div>
               <label htmlFor="password" className="block mb-2 font-semibold text-gray-700">Contraseña:</label>
               <input
@@ -68,7 +165,17 @@ export default function Login() {
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
               />
+              {password && (
+                <p className="mt-1 text-sm font-medium text-gray-600">
+                  {passwordHint.includes('segura') ? (
+                    <span className="text-green-600">{passwordHint}</span>
+                  ) : (
+                    <span className="text-red-600">{passwordHint}</span>
+                  )}
+                </p>
+              )}
             </div>
+
             <button
               type="submit"
               className="w-full bg-red-600 text-white font-semibold py-2 rounded-md hover:bg-red-700 transition-colors"
@@ -78,7 +185,15 @@ export default function Login() {
           </form>
 
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setMessage('');
+              setNombre('');
+              setDni('');
+              setEmailError('');
+              setDniError('');
+              setPasswordHint('');
+            }}
             className="mt-4 text-sm text-red-600 hover:underline focus:outline-none"
           >
             {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}

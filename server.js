@@ -5,13 +5,10 @@ import cors from 'cors';
 const app = express();
 const port = 3001;
 
-// Usar CORS para permitir solicitudes desde cualquier origen
 app.use(cors());
-
-// Middleware para manejar JSON
 app.use(express.json());
 
-// No necesitas llamar a verbose() para crear la base, solo instancias Database directamente
+// Conexión a la base de datos SQLite
 const db = new sqlite3.Database('./database.db', (err) => {
   if (err) {
     console.error('Error al conectar con la base de datos', err);
@@ -20,10 +17,12 @@ const db = new sqlite3.Database('./database.db', (err) => {
   }
 });
 
-// Crear tabla de usuarios si no existe
+// Crear tabla de usuarios con los nuevos campos
 db.run(`
   CREATE TABLE IF NOT EXISTS usuarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT,
+    dni TEXT UNIQUE,
     email TEXT UNIQUE,
     password TEXT
   )
@@ -35,6 +34,7 @@ db.run(`
   }
 });
 
+// Obtener todos los usuarios (para pruebas o administración)
 app.get('/usuarios', (req, res) => {
   const query = 'SELECT * FROM usuarios';
   db.all(query, [], (err, rows) => {
@@ -45,28 +45,31 @@ app.get('/usuarios', (req, res) => {
   });
 });
 
-
-// Ruta para registrar un nuevo usuario
+// Ruta de registro con validación de todos los campos
 app.post('/registro', (req, res) => {
-  const { email, password } = req.body;
+  const { nombre, dni, email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).send('Email y contraseña son requeridos');
+  if (!nombre || !dni || !email || !password) {
+    return res.status(400).send('Todos los campos son requeridos');
   }
 
-  const query = 'INSERT INTO usuarios (email, password) VALUES (?, ?)';
-  db.run(query, [email, password], function (err) {
+  const query = 'INSERT INTO usuarios (nombre, dni, email, password) VALUES (?, ?, ?, ?)';
+  db.run(query, [nombre, dni, email, password], function (err) {
     if (err) {
-      if (err.message.includes('UNIQUE constraint failed')) {
-        return res.status(409).send('El usuario ya existe');
+      if (err.message.includes('UNIQUE constraint failed: usuarios.email')) {
+        return res.status(409).send('El correo ya está registrado');
+      }
+      if (err.message.includes('UNIQUE constraint failed: usuarios.dni')) {
+        return res.status(409).send('El DNI ya está registrado');
       }
       return res.status(500).send('Error al registrar el usuario');
     }
+
     res.status(201).send({ message: 'Usuario registrado correctamente' });
   });
 });
 
-// Ruta para iniciar sesión
+// Ruta de login
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -86,6 +89,12 @@ app.post('/login', (req, res) => {
 
     res.status(200).send({ message: 'Login exitoso' });
   });
+});
+
+// Iniciar servidor
+
+app.get('/', (req, res) => {
+  res.send('¡Backend funcionando correctamente!');
 });
 
 app.listen(port, () => {
