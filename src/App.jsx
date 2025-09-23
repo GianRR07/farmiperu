@@ -32,7 +32,8 @@ export default function App() {
             <Route path="/cliente" element={<LoginCliente />} />
             <Route path="/admin" element={<Administrador />} />
             <Route path="/contacto" element={<Contacto />} /> 
-            <Route path="/admin" element={<Administrador />} />
+            <Route path="/administrador" element={<Administrador />} />
+
           </Routes>
         </main>
         <Footer />

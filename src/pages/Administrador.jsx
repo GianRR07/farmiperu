@@ -1,10 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Administrador() {
   const [contenido, setContenido] = useState('Selecciona una opción');
+  const [adminNombre, setAdminNombre] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminDni, setAdminDni] = useState('');
+  const [usuarios, setUsuarios] = useState([]);
+  const [nuevoAdmin, setNuevoAdmin] = useState({ nombre: '', dni: '', email: '', password: '' });
+  const [mensaje, setMensaje] = useState('');
+  const navigate = useNavigate();
 
-  const manejarClick = (opcion) => {
+  useEffect(() => {
+    const nombre = localStorage.getItem('nombreUsuario');
+    const email = localStorage.getItem('email');
+    const dni = localStorage.getItem('dni');
+    const rol = localStorage.getItem('rolUsuario');
+
+    if (rol !== 'admin') {
+      navigate('/login');
+    } else {
+      setAdminNombre(nombre || '');
+      setAdminEmail(email || '');
+      setAdminDni(dni || '');
+    }
+  }, [navigate]);
+
+  const manejarClick = async (opcion) => {
     setContenido(opcion);
+    setMensaje('');
+    setUsuarios([]);
+
+    if (opcion === 'Lista de Administradores' || opcion === 'Lista de Clientes') {
+      try {
+        const res = await axios.get('http://localhost:3001/usuarios');
+        const filtro = opcion === 'Lista de Administradores' ? 'admin' : 'cliente';
+        const filtrados = res.data.filter(user => user.rol === filtro);
+        setUsuarios(filtrados);
+      } catch (error) {
+        setMensaje('Error al obtener los usuarios');
+      }
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/login');
+  };
+
+  const handleNuevoAdminChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoAdmin(prev => ({ ...prev, [name]: value }));
+  };
+
+  const registrarAdmin = async (e) => {
+    e.preventDefault();
+    const { nombre, dni, email, password } = nuevoAdmin;
+
+    if (!nombre || !dni || !email || !password) {
+      setMensaje('Todos los campos son obligatorios');
+      return;
+    }
+
+    try {
+      await axios.post('http://localhost:3001/registro', {
+        nombre, dni, email, password, rol: 'admin'
+      });
+      setMensaje('Administrador registrado correctamente');
+      setNuevoAdmin({ nombre: '', dni: '', email: '', password: '' });
+    } catch (error) {
+      if (error.response) {
+        setMensaje(error.response.data);
+      } else {
+        setMensaje('Error al registrar administrador');
+      }
+    }
+  };
+
+  const renderContenido = () => {
+    switch (contenido) {
+      case 'perfil':
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-2">👤 Perfil del Administrador</h2>
+            <p><strong>Nombre:</strong> {adminNombre}</p>
+            <p><strong>Email:</strong> {adminEmail}</p>
+            <p><strong>DNI:</strong> {adminDni}</p>
+          </div>
+        );
+      case 'Registrar Nuevo Administrador':
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Registrar Nuevo Administrador</h2>
+            <form onSubmit={registrarAdmin} className="space-y-4">
+              <input type="text" name="nombre" placeholder="Nombre" value={nuevoAdmin.nombre} onChange={handleNuevoAdminChange}
+                className="w-full p-2 border rounded" />
+              <input type="text" name="dni" placeholder="DNI" value={nuevoAdmin.dni} onChange={handleNuevoAdminChange}
+                className="w-full p-2 border rounded" />
+              <input type="email" name="email" placeholder="Correo" value={nuevoAdmin.email} onChange={handleNuevoAdminChange}
+                className="w-full p-2 border rounded" />
+              <input type="password" name="password" placeholder="Contraseña" value={nuevoAdmin.password} onChange={handleNuevoAdminChange}
+                className="w-full p-2 border rounded" />
+              <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Registrar</button>
+            </form>
+            {mensaje && <p className="mt-4 text-red-600 font-medium">{mensaje}</p>}
+          </div>
+        );
+      case 'Lista de Administradores':
+      case 'Lista de Clientes':
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">{contenido}</h2>
+            {usuarios.length === 0 ? (
+              <p>No hay resultados.</p>
+            ) : (
+              <table className="min-w-full table-auto border">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="px-4 py-2 border">Nombre</th>
+                    <th className="px-4 py-2 border">DNI</th>
+                    <th className="px-4 py-2 border">Correo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usuarios.map((user, idx) => (
+                    <tr key={idx} className="text-center">
+                      <td className="px-4 py-2 border">{user.nombre}</td>
+                      <td className="px-4 py-2 border">{user.dni}</td>
+                      <td className="px-4 py-2 border">{user.email}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        );
+      default:
+        return <p className="text-gray-600">{contenido}</p>;
+    }
   };
 
   return (
@@ -12,7 +146,11 @@ export default function Administrador() {
       <h1 className="text-4xl font-bold text-red-600 mb-8">Bienvenido Administrador</h1>
 
       <div className="flex gap-6 min-h-[75vh]">
+        {/* Panel izquierdo */}
         <div className="w-1/4 bg-white shadow-md rounded-lg p-4 space-y-4">
+          <button onClick={() => manejarClick('perfil')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+            Ver Perfil
+          </button>
           <button onClick={() => manejarClick('Registrar Producto')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
             Registrar Producto
           </button>
@@ -31,11 +169,22 @@ export default function Administrador() {
           <button onClick={() => manejarClick('Revisar Ventas')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
             Revisar Ventas
           </button>
+          <button onClick={() => manejarClick('Lista de Administradores')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+            Lista de Administradores
+          </button>
+          <button onClick={() => manejarClick('Lista de Clientes')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+            Lista de Clientes
+          </button>
+
+          <button onClick={handleLogout} className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded">
+            Cerrar Sesión
+          </button>
         </div>
 
+        {/* Panel derecho */}
         <div className="flex-1 bg-white shadow-md rounded-lg p-6 overflow-y-auto">
           <h2 className="text-2xl font-bold text-gray-700 mb-4">Sección activa</h2>
-          <p className="text-gray-600">{contenido}</p>
+          {renderContenido()}
         </div>
       </div>
     </div>

@@ -87,15 +87,20 @@ export default function Login() {
 
       // Aquí modificaciones ----------------
       if (isLogin) {
-        const { nombre: nombreUsuario, rol } = response.data;
-        // guardamos nombre y rol en localStorage
+        const { nombre: nombreUsuario, rol, email, dni } = response.data;
         localStorage.setItem('nombreUsuario', nombreUsuario);
         localStorage.setItem('rolUsuario', rol);
+        localStorage.setItem('email', email);
+        localStorage.setItem('dni', dni);
         setMessage('Iniciaste sesión con éxito');
 
         // esperamos un poco si quieres, luego rediriges
         setTimeout(() => {
-          navigate('/cliente');
+          if(rol === 'admin'){
+            navigate('/administrador');
+          } else {
+            navigate('/cliente');
+          }
         }, 1000);
       } else {
         setMessage('Usuario registrado correctamente');
