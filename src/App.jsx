@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import CarritoCompras from "./pages/CarritoCompras";
 import QuienesSomos from './pages/QuienesSomos';
 import Contacto from './pages/Contacto'; 
+import Administrador from './pages/Administrador';
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/carrito" element={<CarritoCompras />} />
             <Route path="/contacto" element={<Contacto />} /> 
+            <Route path="/admin" element={<Administrador />} />
           </Routes>
         </main>
         <Footer />
