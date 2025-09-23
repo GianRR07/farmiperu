@@ -1,18 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([
+    // Ejemplo: agrega aquí tus productos si quieres probar
+    // { id: 1, name: "Producto 1", price: 10, quantity: 2 },
+    // { id: 2, name: "Producto 2", price: 20, quantity: 1 },
+  ]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const [cartItems, setCartItems] = useState([]); 
+  useEffect(() => {
+    const checkLogin = () => {
+      const nombreUsuario = localStorage.getItem("nombreUsuario");
+      setIsLoggedIn(!!nombreUsuario);
+    };
+
+    checkLogin();
+
+    window.addEventListener("storage", checkLogin);
+    window.addEventListener("loginStateChanged", checkLogin);
+
+    return () => {
+      window.removeEventListener("storage", checkLogin);
+      window.removeEventListener("loginStateChanged", checkLogin);
+    };
+  }, []);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       setSearchTerm("");
       setIsOpen(false);
     }
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
   const removeItem = (id) => {
@@ -70,9 +96,9 @@ export default function Navbar() {
           {/* Botones y carrito desktop */}
           <div className="hidden md:flex items-center space-x-4">
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="flex items-center text-white hover:text-red-200 focus:outline-none"
-              aria-label="Abrir carrito"
+              onClick={toggleSidebar}
+              className="flex items-center text-white hover:text-red-200 focus:outline-none border border-transparent hover:border-red-300 rounded-md px-2"
+              aria-label="Toggle carrito"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -91,21 +117,30 @@ export default function Navbar() {
               Carrito ({cartItems.length})
             </button>
 
-            <Link
-              to="/login"
-              className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Iniciar Sesión
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                to="/cliente"
+                className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
+              >
+                Mi Perfil
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Iniciar Sesión
+              </Link>
+            )}
           </div>
 
-          {/* Botones móviles: carrito a la izquierda del burger */}
+          {/* Botones móviles: carrito y burger */}
           <div className="md:hidden flex items-center space-x-4">
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="flex items-center text-white hover:text-red-200 focus:outline-none"
-              aria-label="Abrir carrito"
+              onClick={toggleSidebar}
+              className="flex items-center text-white hover:text-red-200 focus:outline-none border border-transparent hover:border-red-300 rounded-md px-2"
+              aria-label="Toggle carrito"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -218,11 +253,11 @@ export default function Navbar() {
           </li>
           <li className="md:hidden">
             <Link
-              to="/login"
+              to={isLoggedIn ? "/cliente" : "/login"}
               className="block px-6 py-3 text-white hover:text-[#ff7777] font-medium"
               onClick={() => setIsOpen(false)}
             >
-              Inicio de Sesión
+              {isLoggedIn ? "Mi Perfil" : "Iniciar Sesión"}
             </Link>
           </li>
         </ul>
@@ -230,62 +265,64 @@ export default function Navbar() {
 
       {/* Sidebar carrito */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex justify-between items-center p-4 border-b border-gray-300">
-          <h2 className="text-xl font-semibold text-[#e73535]">
-            Carrito de Compras
-          </h2>
+        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-red-700">Carrito</h2>
           <button
-            onClick={() => setSidebarOpen(false)}
+            onClick={toggleSidebar}
             aria-label="Cerrar carrito"
-            className="text-gray-600 hover:text-[#e73535] focus:outline-none"
+            className="text-red-700 hover:text-red-900 font-bold text-2xl leading-none focus:outline-none"
           >
-            ✖️
+            &times;
           </button>
         </div>
 
-        <div className="p-4 overflow-y-auto flex flex-col h-[calc(100%-64px)]">
+        <div className="flex-grow overflow-y-auto p-4">
           {cartItems.length === 0 ? (
-            <p className="text-gray-600">No hay productos en el carrito.</p>
+            <p className="text-gray-500">El carrito está vacío.</p>
           ) : (
             cartItems.map((item) => (
               <div
                 key={item.id}
-                className="flex justify-between items-center mb-4 border-b border-gray-200 pb-2"
+                className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2"
               >
                 <div>
-                  <h3 className="font-semibold text-[#e73535]">{item.name}</h3>
-                  <p>
-                    Cantidad: {item.quantity} x S/ {item.price.toFixed(2)}
+                  <p className="font-semibold text-gray-800">{item.name}</p>
+                  <p className="text-sm text-gray-600">
+                    {item.quantity} x S/.{item.price.toFixed(2)}
                   </p>
                 </div>
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="text-red-500 hover:text-red-700 focus:outline-none"
+                  className="text-red-600 hover:text-red-800 font-bold text-lg focus:outline-none"
                   aria-label={`Eliminar ${item.name}`}
                 >
-                  🗑️
+                  ×
                 </button>
               </div>
             ))
           )}
+        </div>
 
-          {cartItems.length > 0 && (
-            <div className="mt-auto pt-4 border-t border-gray-300">
-              <p className="font-semibold text-right text-lg">
-                Total: S/ {totalPrice.toFixed(2)}
-              </p>
-              <button
-                onClick={() => alert("Ir a pagar...")}
-                className="w-full bg-[#e73535] text-white py-2 rounded-md mt-2 hover:bg-red-600 transition-colors"
-              >
-                Pagar
-              </button>
-            </div>
-          )}
+        {/* Total fijo abajo */}
+        <div className="p-4 bg-red-50 border-t border-red-600">
+          <div className="flex justify-between items-center font-semibold text-red-700 text-lg">
+            <span>Total:</span>
+            <span>S/.{totalPrice.toFixed(2)}</span>
+          </div>
+          <button
+            disabled={cartItems.length === 0}
+            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${
+              cartItems.length === 0
+                ? "bg-red-300 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            Finalizar compra
+          </button>
         </div>
       </div>
     </>

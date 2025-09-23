@@ -85,16 +85,18 @@ export default function Login() {
       const data = isLogin ? { email, password } : { nombre, dni, email, password };
       const response = await axios.post(url, data);
 
-      // Aquí modificaciones ----------------
       if (isLogin) {
         const { nombre: nombreUsuario, rol, email, dni } = response.data;
         localStorage.setItem('nombreUsuario', nombreUsuario);
         localStorage.setItem('rolUsuario', rol);
         localStorage.setItem('email', email);
         localStorage.setItem('dni', dni);
+
+        
+        window.dispatchEvent(new Event('loginStateChanged'));
+
         setMessage('Iniciaste sesión con éxito');
 
-        // esperamos un poco si quieres, luego rediriges
         setTimeout(() => {
           if(rol === 'admin'){
             navigate('/administrador');
@@ -102,7 +104,7 @@ export default function Login() {
             navigate('/cliente');
           }
         }, 1000);
-      } else {
+      }else {
         setMessage('Usuario registrado correctamente');
         // quizá redirigir al login
         setTimeout(() => setMessage(''), 4000);
