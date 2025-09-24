@@ -1,15 +1,10 @@
 import { useState, useEffect } from "react";
-<<<<<<< HEAD
 import { Link, useNavigate } from "react-router-dom";
-=======
-import { Link } from "react-router-dom";
->>>>>>> 498e7720cdf89b842f37b7a4b9856cc5629f39f5
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-<<<<<<< HEAD
   const [cartItems, setCartItems] = useState([]);
 
   const [usuarioLogueado, setUsuarioLogueado] = useState(null);
@@ -50,29 +45,6 @@ export default function Navbar() {
       window.removeEventListener("storage", handleStorageChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("usuarioActualizado", actualizarUsuario);
-=======
-  const [cartItems, setCartItems] = useState([
-    // Ejemplo: agrega aquí tus productos si quieres probar
-    // { id: 1, name: "Producto 1", price: 10, quantity: 2 },
-    // { id: 2, name: "Producto 2", price: 20, quantity: 1 },
-  ]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const checkLogin = () => {
-      const nombreUsuario = localStorage.getItem("nombreUsuario");
-      setIsLoggedIn(!!nombreUsuario);
-    };
-
-    checkLogin();
-
-    window.addEventListener("storage", checkLogin);
-    window.addEventListener("loginStateChanged", checkLogin);
-
-    return () => {
-      window.removeEventListener("storage", checkLogin);
-      window.removeEventListener("loginStateChanged", checkLogin);
->>>>>>> 498e7720cdf89b842f37b7a4b9856cc5629f39f5
     };
   }, []);
 
@@ -84,7 +56,6 @@ export default function Navbar() {
     }
   };
 
-<<<<<<< HEAD
   const handleMiSesion = () => {
     if (usuarioLogueado?.rol === "admin") {
       navigate("/admin");
@@ -95,12 +66,6 @@ export default function Navbar() {
 
 
 
-=======
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
->>>>>>> 498e7720cdf89b842f37b7a4b9856cc5629f39f5
   const removeItem = (id) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
   };
@@ -177,7 +142,6 @@ export default function Navbar() {
               Carrito ({cartItems.length})
             </button>
 
-<<<<<<< HEAD
             {usuarioLogueado ? (
               <button
                 onClick={handleMiSesion}
@@ -185,36 +149,20 @@ export default function Navbar() {
               >
                 Mi Sesión
               </button>
-=======
-            {isLoggedIn ? (
-              <Link
-                to="/cliente"
-                className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
-              >
-                Mi Perfil
-              </Link>
->>>>>>> 498e7720cdf89b842f37b7a4b9856cc5629f39f5
             ) : (
               <Link
                 to="/login"
                 className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
-<<<<<<< HEAD
                 onClick={() => {
                   setIsOpen(false);
                   setUsuarioLogueado(null);
                 }}
-=======
-                onClick={() => setIsOpen(false)}
->>>>>>> 498e7720cdf89b842f37b7a4b9856cc5629f39f5
               >
                 Iniciar Sesión
               </Link>
             )}
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 498e7720cdf89b842f37b7a4b9856cc5629f39f5
           </div>
 
           {/* Botones móviles: carrito y burger */}
@@ -332,7 +280,6 @@ export default function Navbar() {
               Carrito de Compras
             </Link>
           </li>
-<<<<<<< HEAD
           {!usuarioLogueado ? (
             <li className="md:hidden">
               <Link
@@ -356,30 +303,13 @@ export default function Navbar() {
               </button>
             </li>
           )}
-=======
-          <li className="md:hidden">
-            <Link
-              to={isLoggedIn ? "/cliente" : "/login"}
-              className="block px-6 py-3 text-white hover:text-[#ff7777] font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              {isLoggedIn ? "Mi Perfil" : "Iniciar Sesión"}
-            </Link>
-          </li>
->>>>>>> 498e7720cdf89b842f37b7a4b9856cc5629f39f5
         </ul>
       </nav>
 
       {/* Sidebar carrito */}
       <div
-<<<<<<< HEAD
         className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
-=======
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${
-          sidebarOpen ? "translate-x-0" : "translate-x-full"
-        }`}
->>>>>>> 498e7720cdf89b842f37b7a4b9856cc5629f39f5
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-red-700">Carrito</h2>
