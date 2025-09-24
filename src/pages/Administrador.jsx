@@ -10,6 +10,8 @@ export default function Administrador() {
   const [usuarios, setUsuarios] = useState([]);
   const [nuevoAdmin, setNuevoAdmin] = useState({ nombre: '', dni: '', email: '', password: '' });
   const [mensaje, setMensaje] = useState('');
+  const [productos, setProductos] = useState([]);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,11 +44,17 @@ export default function Administrador() {
         setMensaje('Error al obtener los usuarios');
       }
     }
+
+    if (opcion === 'Eliminar producto') {
+      obtenerProductos();
+    }
+
   };
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate('/login');
+    window.dispatchEvent(new Event("usuarioActualizado"));
+    navigate('/Login');
   };
 
   const handleNuevoAdminChange = (e) => {
@@ -75,6 +83,68 @@ export default function Administrador() {
       } else {
         setMensaje('Error al registrar administrador');
       }
+    }
+  };
+
+
+  const obtenerProductos = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/productos');
+      setProductos(res.data);
+    } catch (error) {
+      setMensaje('Error al obtener productos');
+    }
+  };
+
+
+
+
+  const eliminarProducto = async (id) => {
+    const confirmar = window.confirm('¿Estás seguro de que deseas eliminar este producto?');
+    if (!confirmar) return;
+
+    try {
+      await axios.delete(`http://localhost:3001/productos/${id}`);
+      setMensaje('Producto eliminado correctamente');
+      obtenerProductos();
+    } catch (error) {
+      setMensaje('Error al eliminar el producto');
+    }
+  };
+
+
+  const [nuevoProducto, setNuevoProducto] = useState({
+    nombre: '',
+    descripcion: '',
+    precio: '',
+    presentacion: '',
+    imagen: ''
+  });
+
+  const handleNuevoProductoChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoProducto(prev => ({ ...prev, [name]: value }));
+  };
+
+  const registrarProducto = async (e) => {
+    e.preventDefault();
+    const { nombre, descripcion, precio, presentacion, imagen } = nuevoProducto;
+
+    if (!nombre || !descripcion || !precio || !presentacion || !imagen) {
+      setMensaje('Todos los campos son obligatorios');
+      return;
+    }
+
+    try {
+      await axios.post('http://localhost:3001/productos', {
+        nombre, descripcion, precio, presentacion, imagen
+      });
+
+      setMensaje('Producto registrado correctamente');
+      setNuevoProducto({ nombre: '', descripcion: '', precio: '', presentacion: '', imagen: '' });
+    } catch (error) {
+      console.error(error);
+      setMensaje('Error al registrar el producto');
     }
   };
 
@@ -136,6 +206,64 @@ export default function Administrador() {
             )}
           </div>
         );
+      case 'Registrar Producto':
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Registrar Producto</h2>
+            <form onSubmit={registrarProducto} className="space-y-4">
+              <input type="text" name="nombre" placeholder="Nombre del producto" value={nuevoProducto.nombre} onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded" />
+              <textarea name="descripcion" placeholder="Descripción" value={nuevoProducto.descripcion} onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded" />
+              <input type="number" name="precio" placeholder="Precio" value={nuevoProducto.precio} onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded" />
+              <input type="text" name="presentacion" placeholder="Presentación (ej: Caja, Unidad, etc)" value={nuevoProducto.presentacion} onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded" />
+              <input type="text" name="imagen" placeholder="URL de la imagen" value={nuevoProducto.imagen} onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded" />
+              <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Registrar Producto</button>
+            </form>
+            {mensaje && <p className="mt-4 text-red-600 font-medium">{mensaje}</p>}
+          </div>
+        );
+
+      case 'Eliminar producto':
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Eliminar Producto</h2>
+            {productos.length === 0 ? (
+              <p>No hay productos disponibles.</p>
+            ) : (
+              <table className="min-w-full table-auto border">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="px-4 py-2 border">Nombre</th>
+                    <th className="px-4 py-2 border">Precio</th>
+                    <th className="px-4 py-2 border">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productos.map(producto => (
+                    <tr key={producto.id} className="text-center">
+                      <td className="px-4 py-2 border">{producto.nombre}</td>
+                      <td className="px-4 py-2 border">${producto.precio}</td>
+                      <td className="px-4 py-2 border">
+                        <button
+                          onClick={() => eliminarProducto(producto.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {mensaje && <p className="mt-4 text-red-600 font-medium">{mensaje}</p>}
+          </div>
+        );
+
       default:
         return <p className="text-gray-600">{contenido}</p>;
     }

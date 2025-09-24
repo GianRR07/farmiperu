@@ -1,12 +1,53 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
 
-  const [cartItems, setCartItems] = useState([]); 
+  const [usuarioLogueado, setUsuarioLogueado] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const actualizarUsuario = () => {
+      const nombre = localStorage.getItem("nombreUsuario");
+      const rol = localStorage.getItem("rolUsuario");
+
+      if (nombre && rol) {
+        setUsuarioLogueado({ nombre, rol });
+      } else {
+        setUsuarioLogueado(null);
+      }
+    };
+
+    window.addEventListener("usuarioActualizado", actualizarUsuario);
+
+    actualizarUsuario();
+
+    const handleStorageChange = (e) => {
+      if (e.key === "nombreUsuario" || e.key === "rolUsuario") {
+        actualizarUsuario();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        actualizarUsuario();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("usuarioActualizado", actualizarUsuario);
+    };
+  }, []);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -14,6 +55,16 @@ export default function Navbar() {
       setIsOpen(false);
     }
   };
+
+  const handleMiSesion = () => {
+    if (usuarioLogueado?.rol === "admin") {
+      navigate("/admin");
+    } else if (usuarioLogueado?.rol === "cliente") {
+      navigate("/cliente");
+    }
+  };
+
+
 
   const removeItem = (id) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
@@ -91,13 +142,27 @@ export default function Navbar() {
               Carrito ({cartItems.length})
             </button>
 
-            <Link
-              to="/login"
-              className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Iniciar Sesión
-            </Link>
+            {usuarioLogueado ? (
+              <button
+                onClick={handleMiSesion}
+                className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
+              >
+                Mi Sesión
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
+                onClick={() => {
+                  setIsOpen(false);
+                  setUsuarioLogueado(null);
+                }}
+              >
+                Iniciar Sesión
+              </Link>
+            )}
+
+
           </div>
 
           {/* Botones móviles: carrito a la izquierda del burger */}
@@ -163,11 +228,10 @@ export default function Navbar() {
 
         {/* Menú navegación principal */}
         <ul
-          className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${
-            isOpen
-              ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
-              : "top-[-490px] opacity-0 pointer-events-none"
-          } md:relative md:top-0 md:opacity-100 md:pointer-events-auto px-6 md:px-0 py-4 md:py-0 z-40`}
+          className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${isOpen
+            ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
+            : "top-[-490px] opacity-0 pointer-events-none"
+            } md:relative md:top-0 md:opacity-100 md:pointer-events-auto px-6 md:px-0 py-4 md:py-0 z-40`}
         >
           <li>
             <Link
@@ -216,23 +280,36 @@ export default function Navbar() {
               Carrito de Compras
             </Link>
           </li>
-          <li className="md:hidden">
-            <Link
-              to="/login"
-              className="block px-6 py-3 text-white hover:text-[#ff7777] font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              Inicio de Sesión
-            </Link>
-          </li>
+          {!usuarioLogueado ? (
+            <li className="md:hidden">
+              <Link
+                to="/login"
+                className="block px-6 py-3 text-white hover:text-[#ff7777] font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Inicio de Sesión
+              </Link>
+            </li>
+          ) : (
+            <li className="md:hidden">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  handleMiSesion();
+                }}
+                className="block w-full text-left px-6 py-3 text-white hover:text-[#ff7777] font-medium"
+              >
+                Mi Sesión
+              </button>
+            </li>
+          )}
         </ul>
       </nav>
 
       {/* Sidebar carrito */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-300">
           <h2 className="text-xl font-semibold text-[#e73535]">

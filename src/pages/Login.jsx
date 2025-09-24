@@ -85,26 +85,24 @@ export default function Login() {
       const data = isLogin ? { email, password } : { nombre, dni, email, password };
       const response = await axios.post(url, data);
 
-      // Aquí modificaciones ----------------
       if (isLogin) {
         const { nombre: nombreUsuario, rol, email, dni } = response.data;
         localStorage.setItem('nombreUsuario', nombreUsuario);
         localStorage.setItem('rolUsuario', rol);
         localStorage.setItem('email', email);
         localStorage.setItem('dni', dni);
+
+        // 🔥 Notificar al navbar que hubo login
+        window.dispatchEvent(new Event("usuarioActualizado"));
+
         setMessage('Iniciaste sesión con éxito');
 
-        // esperamos un poco si quieres, luego rediriges
         setTimeout(() => {
-          if(rol === 'admin'){
-            navigate('/administrador');
-          } else {
-            navigate('/cliente');
-          }
+          window.location.href = rol === 'admin' ? '/administrador' : '/cliente';
         }, 1000);
+
       } else {
         setMessage('Usuario registrado correctamente');
-        // quizá redirigir al login
         setTimeout(() => setMessage(''), 4000);
       }
     } catch (error) {
@@ -117,7 +115,6 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
       <div className="max-w-4xl w-full bg-white shadow-lg rounded-lg overflow-hidden md:flex">
-        
         {/* Formulario */}
         <div className="w-full md:w-1/2 p-8">
           <h2 className="text-2xl font-bold mb-6 text-red-600">

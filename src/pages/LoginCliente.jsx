@@ -18,8 +18,8 @@ export default function LoginCliente() {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('nombreUsuario');
-    localStorage.removeItem('rolUsuario');
+    localStorage.clear();
+    window.dispatchEvent(new Event("usuarioActualizado"));
     navigate('/login');
   };
 
