@@ -109,7 +109,7 @@ app.post('/registro', (req, res) => {
   });
 });
 
-// ✅ Ruta de login actualizada para devolver más info
+
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -127,13 +127,13 @@ app.post('/login', (req, res) => {
       return res.status(401).send('Credenciales incorrectas');
     }
 
-    // ✅ Devuelve nombre, rol y mensaje
+    
     res.status(200).json({
       message: 'Login exitoso',
       nombre: row.nombre,
       rol: row.rol,
-      dni: row.dni, // opcional
-      email: row.email // opcional
+      dni: row.dni, 
+      email: row.email 
     });
   });
 });
