@@ -109,7 +109,7 @@ app.post('/registro', (req, res) => {
   });
 });
 
-
+// ✅ Ruta de login actualizada para devolver más info
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -127,16 +127,95 @@ app.post('/login', (req, res) => {
       return res.status(401).send('Credenciales incorrectas');
     }
 
-    
+    // ✅ Devuelve nombre, rol y mensaje
     res.status(200).json({
       message: 'Login exitoso',
       nombre: row.nombre,
       rol: row.rol,
-      dni: row.dni, 
-      email: row.email 
+      dni: row.dni, // opcional
+      email: row.email // opcional
     });
   });
 });
+
+
+// Crear tabla de productos
+db.run(`
+  CREATE TABLE IF NOT EXISTS productos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT,
+    descripcion TEXT,
+    precio REAL,
+    presentacion TEXT,
+    imagen TEXT
+  )
+`, (err) => {
+  if (err) {
+    console.error('Error al crear la tabla de productos', err);
+  } else {
+    console.log('Tabla de productos creada correctamente');
+  }
+});
+
+
+
+
+// Ruta para registrar productos
+app.post('/productos', (req, res) => {
+  const { nombre, descripcion, precio, presentacion, imagen } = req.body;
+
+  if (!nombre || !descripcion || !precio || !presentacion || !imagen) {
+    return res.status(400).send('Todos los campos son requeridos');
+  }
+
+  const query = `
+    INSERT INTO productos (nombre, descripcion, precio, presentacion, imagen)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+
+  db.run(query, [nombre, descripcion, precio, presentacion, imagen], function (err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Error al registrar el producto');
+    }
+
+    res.status(201).send({ message: 'Producto registrado correctamente' });
+  });
+});
+
+// Ya está creada la tabla productos
+app.get('/productos', (req, res) => {
+  const query = 'SELECT * FROM productos';
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      return res.status(500).send('Error al obtener los productos');
+    }
+    res.status(200).json(rows);
+  });
+});
+
+
+
+// Eliminar un producto por ID
+app.delete('/productos/:id', (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM productos WHERE id = ?';
+  db.run(query, [id], function (err) {
+    if (err) {
+      return res.status(500).send('Error al eliminar el producto');
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).send('Producto no encontrado');
+    }
+
+    res.status(200).send('Producto eliminado correctamente');
+  });
+});
+
+
+
 
 // Ruta de prueba
 app.get('/', (req, res) => {

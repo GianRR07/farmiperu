@@ -6,16 +6,19 @@ export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cartItems, setCartItems] = useState([
-    // Ejemplo: agrega aquí tus productos si quieres probar
-    // { id: 1, name: "Producto 1", price: 10, quantity: 2 },
-    // { id: 2, name: "Producto 2", price: 20, quantity: 1 },
+
   ]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [rolUsuario, setRolUsuario] = useState(null);
+
 
   useEffect(() => {
     const checkLogin = () => {
       const nombreUsuario = localStorage.getItem("nombreUsuario");
+      const rol = localStorage.getItem("rolUsuario");
+
       setIsLoggedIn(!!nombreUsuario);
+      setRolUsuario(rol);
     };
 
     checkLogin();
@@ -119,11 +122,12 @@ export default function Navbar() {
 
             {isLoggedIn ? (
               <Link
-                to="/cliente"
+                to={rolUsuario === "admin" ? "/admin" : "/cliente"}
                 className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
               >
                 Mi Perfil
               </Link>
+
             ) : (
               <Link
                 to="/login"
@@ -198,11 +202,10 @@ export default function Navbar() {
 
         {/* Menú navegación principal */}
         <ul
-          className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${
-            isOpen
-              ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
-              : "top-[-490px] opacity-0 pointer-events-none"
-          } md:relative md:top-0 md:opacity-100 md:pointer-events-auto px-6 md:px-0 py-4 md:py-0 z-40`}
+          className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${isOpen
+            ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
+            : "top-[-490px] opacity-0 pointer-events-none"
+            } md:relative md:top-0 md:opacity-100 md:pointer-events-auto px-6 md:px-0 py-4 md:py-0 z-40`}
         >
           <li>
             <Link
@@ -253,7 +256,13 @@ export default function Navbar() {
           </li>
           <li className="md:hidden">
             <Link
-              to={isLoggedIn ? "/cliente" : "/login"}
+              to={
+                isLoggedIn
+                  ? rolUsuario === "admin"
+                    ? "/admin"
+                    : "/cliente"
+                  : "/login"
+              }
               className="block px-6 py-3 text-white hover:text-[#ff7777] font-medium"
               onClick={() => setIsOpen(false)}
             >
@@ -265,9 +274,8 @@ export default function Navbar() {
 
       {/* Sidebar carrito */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${
-          sidebarOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${sidebarOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-red-700">Carrito</h2>
@@ -315,11 +323,10 @@ export default function Navbar() {
           </div>
           <button
             disabled={cartItems.length === 0}
-            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${
-              cartItems.length === 0
-                ? "bg-red-300 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
-            }`}
+            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${cartItems.length === 0
+              ? "bg-red-300 cursor-not-allowed"
+              : "bg-red-600 hover:bg-red-700"
+              }`}
           >
             Finalizar compra
           </button>
