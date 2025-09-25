@@ -11,9 +11,7 @@ export default function CarritoCompras({ isOpen, onClose }) {
         <button onClick={onClose} className="text-gray-500 hover:text-red-600 text-xl">&times;</button>
       </div>
       <div className="p-4">
-        {/* Aquí se mostrarán los productos del carrito */}
         <p className="text-gray-600">Tu carrito está vacío.</p>
-        {/* En el futuro puedes mapear productos agregados aquí */}
       </div>
     </div>
   );

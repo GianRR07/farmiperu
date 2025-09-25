@@ -14,7 +14,6 @@ export default function LoginCliente() {
       navigate('/login');
     } else {
       setNombreUsuario(nombre);
-      // Aquí podrías usar "rol" si deseas mostrar diferentes opciones dependiendo del rol (admin, cliente, etc.)
     }
   }, [navigate]);
 
@@ -47,7 +46,6 @@ export default function LoginCliente() {
           <div>
             <h2 className="text-xl font-semibold mb-2">🛒 Historial de Compras</h2>
             <p>No has realizado ninguna compra aún.</p>
-            {/* Aquí se podrían listar las compras pasadas del usuario */}
           </div>
         );
       case 'carrito':
@@ -55,7 +53,6 @@ export default function LoginCliente() {
           <div>
             <h2 className="text-xl font-semibold mb-2">🛍️ Mi Carrito</h2>
             <p>No tienes productos en el carrito.</p>
-            {/* Aquí podrías mostrar los productos agregados al carrito */}
           </div>
         );
       case 'metodosPago':
@@ -63,7 +60,6 @@ export default function LoginCliente() {
           <div>
             <h2 className="text-xl font-semibold mb-2">💳 Métodos de Pago</h2>
             <p>Aún no has agregado ningún método de pago.</p>
-            {/* Aquí podrías mostrar o permitir agregar métodos de pago */}
           </div>
         );
       case 'direcciones':
@@ -71,7 +67,6 @@ export default function LoginCliente() {
           <div>
             <h2 className="text-xl font-semibold mb-2">🏠 Direcciones de Envío</h2>
             <p>No tienes direcciones guardadas.</p>
-            {/* Aquí podrías permitir agregar o modificar direcciones */}
           </div>
         );
       case 'ofertas':
@@ -79,7 +74,6 @@ export default function LoginCliente() {
           <div>
             <h2 className="text-xl font-semibold mb-2">🎉 Promociones y Ofertas</h2>
             <p>No hay promociones disponibles en este momento.</p>
-            {/* Aquí podrías mostrar las ofertas disponibles para el cliente */}
           </div>
         );
       default:
@@ -90,7 +84,6 @@ export default function LoginCliente() {
   return (
     <div className="min-h-screen bg-gray-100 pt-[140px] px-6">
       <div className="flex gap-6">
-        {/* Panel Izquierdo */}
         <div className="w-1/4 bg-white p-6 shadow-md rounded-lg h-fit">
           <h1 className="text-lg font-bold text-red-600 mb-6">
             Bienvenido, {nombreUsuario} 👋
@@ -136,7 +129,6 @@ export default function LoginCliente() {
           </div>
         </div>
 
-        {/* Panel Derecho */}
         <div className="w-3/4 bg-white p-8 rounded-lg shadow-md">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">Sección activa</h2>
           {renderContenido()}

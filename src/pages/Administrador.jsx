@@ -274,7 +274,6 @@ export default function Administrador() {
       <h1 className="text-4xl font-bold text-red-600 mb-8">Bienvenido Administrador</h1>
 
       <div className="flex gap-6 min-h-[75vh]">
-        {/* Panel izquierdo */}
         <div className="w-1/4 bg-white shadow-md rounded-lg p-4 space-y-4">
           <button onClick={() => manejarClick('perfil')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
             Ver Perfil
@@ -309,7 +308,6 @@ export default function Administrador() {
           </button>
         </div>
 
-        {/* Panel derecho */}
         <div className="flex-1 bg-white shadow-md rounded-lg p-6 overflow-y-auto">
           <h2 className="text-2xl font-bold text-gray-700 mb-4">Sección activa</h2>
           {renderContenido()}

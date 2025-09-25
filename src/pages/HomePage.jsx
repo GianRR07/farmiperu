@@ -25,7 +25,6 @@ export default function HomePage() {
   return (
     <div className="pt-20 w-full mt-5">
       <div className="relative w-full h-64 md:h-96 overflow-hidden rounded-lg shadow-lg">
-        {/* Aquí renderizamos todas las imágenes, pero solo la actual es visible */}
         {slides.map((slide, index) => (
           <img
             key={index}
@@ -38,7 +37,6 @@ export default function HomePage() {
           />
         ))}
 
-        {/* Botones de navegación */}
         <button
           onClick={prevSlide}
           aria-label="Anterior"

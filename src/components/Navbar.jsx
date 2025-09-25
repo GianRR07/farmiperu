@@ -60,7 +60,6 @@ export default function Navbar() {
         style={{ backgroundColor: "#e73535ff" }}
       >
         <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center w-full">
-          {/* Logo */}
           <Link
             to="/"
             className="flex items-center text-white font-bold text-xl select-none cursor-pointer"
@@ -74,7 +73,6 @@ export default function Navbar() {
             FARMACIAS PERÚ
           </Link>
 
-          {/* Barra de búsqueda */}
           <form
             onSubmit={handleSearch}
             className="hidden md:flex flex-grow max-w-md mx-6"
@@ -96,7 +94,6 @@ export default function Navbar() {
             </button>
           </form>
 
-          {/* Botones y carrito desktop */}
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={toggleSidebar}
@@ -139,7 +136,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Botones móviles: carrito y burger */}
           <div className="md:hidden flex items-center space-x-4">
             <button
               onClick={toggleSidebar}
@@ -200,7 +196,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Menú navegación principal */}
         <ul
           className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${isOpen
             ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
@@ -244,7 +239,6 @@ export default function Navbar() {
             </Link>
           </li>
 
-          {/* En móvil también mostramos carrito e iniciar sesión aquí */}
           <li className="md:hidden">
             <Link
               to="/carrito"
@@ -272,7 +266,6 @@ export default function Navbar() {
         </ul>
       </nav>
 
-      {/* Sidebar carrito */}
       <div
         className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${sidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
@@ -315,7 +308,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Total fijo abajo */}
         <div className="p-4 bg-red-50 border-t border-red-600">
           <div className="flex justify-between items-center font-semibold text-red-700 text-lg">
             <span>Total:</span>
