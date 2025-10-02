@@ -8,7 +8,6 @@ const port = 3001;
 app.use(cors());
 app.use(express.json());
 
-// Conexión a la base de datos SQLite
 const db = new sqlite3.Database('./database.db', (err) => {
   if (err) {
     console.error('Error al conectar con la base de datos', err);
@@ -17,7 +16,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
   }
 });
 
-// Eliminar la tabla si existe y crearla nuevamente
 db.run(`DROP TABLE IF EXISTS usuarios`, (err) => {
   if (err) {
     console.error('Error al eliminar la tabla', err);
@@ -25,7 +23,6 @@ db.run(`DROP TABLE IF EXISTS usuarios`, (err) => {
     console.log('Tabla usuarios eliminada (si existía)');
   }
 
-  // Crear tabla con el nuevo campo 'rol'
   db.run(`
     CREATE TABLE IF NOT EXISTS usuarios (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +38,6 @@ db.run(`DROP TABLE IF EXISTS usuarios`, (err) => {
     } else {
       console.log('Tabla de usuarios creada correctamente');
 
-      // Crear usuario admin
       const insertAdmin = `
         INSERT OR IGNORE INTO usuarios (nombre, dni, email, password, rol)
         VALUES ('admin', '11111111', 'admin@admin.com', 'admin1.', 'admin')
@@ -55,7 +51,6 @@ db.run(`DROP TABLE IF EXISTS usuarios`, (err) => {
         }
       });
 
-      // Crear usuario de prueba
       const insertPrueba = `
         INSERT OR IGNORE INTO usuarios (nombre, dni, email, password, rol)
         VALUES ('prueba', '22222222', 'prueba@prueba.com', 'prueba1.', 'cliente')
@@ -72,7 +67,6 @@ db.run(`DROP TABLE IF EXISTS usuarios`, (err) => {
   });
 });
 
-// Obtener todos los usuarios
 app.get('/usuarios', (req, res) => {
   const query = 'SELECT * FROM usuarios';
   db.all(query, [], (err, rows) => {
@@ -83,7 +77,6 @@ app.get('/usuarios', (req, res) => {
   });
 });
 
-// Ruta de registro
 app.post('/registro', (req, res) => {
   const { nombre, dni, email, password, rol } = req.body;
 
@@ -109,7 +102,6 @@ app.post('/registro', (req, res) => {
   });
 });
 
-// ✅ Ruta de login actualizada para devolver más info
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -127,19 +119,17 @@ app.post('/login', (req, res) => {
       return res.status(401).send('Credenciales incorrectas');
     }
 
-    // ✅ Devuelve nombre, rol y mensaje
     res.status(200).json({
       message: 'Login exitoso',
       nombre: row.nombre,
       rol: row.rol,
-      dni: row.dni, // opcional
-      email: row.email // opcional
+      dni: row.dni, 
+      email: row.email 
     });
   });
 });
 
 
-// Crear tabla de productos
 db.run(`
   CREATE TABLE IF NOT EXISTS productos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -160,7 +150,6 @@ db.run(`
 
 
 
-// Ruta para registrar productos
 app.post('/productos', (req, res) => {
   const { nombre, descripcion, precio, presentacion, imagen } = req.body;
 
@@ -183,7 +172,7 @@ app.post('/productos', (req, res) => {
   });
 });
 
-// Ya está creada la tabla productos
+
 app.get('/productos', (req, res) => {
   const query = 'SELECT * FROM productos';
   db.all(query, [], (err, rows) => {
@@ -196,7 +185,6 @@ app.get('/productos', (req, res) => {
 
 
 
-// Eliminar un producto por ID
 app.delete('/productos/:id', (req, res) => {
   const { id } = req.params;
 
@@ -217,12 +205,10 @@ app.delete('/productos/:id', (req, res) => {
 
 
 
-// Ruta de prueba
 app.get('/', (req, res) => {
   res.send('¡Backend funcionando correctamente!');
 });
 
-// Iniciar servidor
 app.listen(port, () => {
   console.log(`Servidor Express corriendo en http://localhost:${port}`);
 });
