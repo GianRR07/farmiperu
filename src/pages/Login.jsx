@@ -92,19 +92,16 @@ export default function Login() {
         localStorage.setItem('email', email);
         localStorage.setItem('dni', dni);
 
-        
-        window.dispatchEvent(new Event('loginStateChanged'));
+        // 🔥 Notificar al navbar que hubo login
+        window.dispatchEvent(new Event("usuarioActualizado"));
 
         setMessage('Iniciaste sesión con éxito');
 
         setTimeout(() => {
-          if(rol === 'admin'){
-            navigate('/administrador');
-          } else {
-            navigate('/cliente');
-          }
+          window.location.href = rol === 'admin' ? '/administrador' : '/cliente';
         }, 1000);
-      }else {
+
+      } else {
         setMessage('Usuario registrado correctamente');
         setTimeout(() => setMessage(''), 4000);
       }
@@ -118,7 +115,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
       <div className="max-w-4xl w-full bg-white shadow-lg rounded-lg overflow-hidden md:flex">
-        
+        {/* Formulario */}
         <div className="w-full md:w-1/2 p-8">
           <h2 className="text-2xl font-bold mb-6 text-red-600">
             {isLogin ? 'Iniciar sesión' : 'Registrarse'}
@@ -227,6 +224,7 @@ export default function Login() {
           )}
         </div>
 
+        {/* Promo (solo en md y superior) */}
         <div className="hidden md:flex flex-col justify-center bg-red-600 text-white p-8 md:w-1/2">
           <h2 className="text-3xl font-bold mb-4">¡Promoción de la semana!</h2>
           <p className="text-lg leading-relaxed">

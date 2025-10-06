@@ -18,17 +18,10 @@ export default function LoginCliente() {
   }, [navigate]);
 
   const handleLogout = () => {
-  localStorage.removeItem('nombreUsuario');
-  localStorage.removeItem('rolUsuario');
-  localStorage.removeItem('email');
-  localStorage.removeItem('dni');
-
-  
-  window.dispatchEvent(new Event('loginStateChanged'));
-
-  navigate('/login');
-};
-
+    localStorage.clear();
+    window.dispatchEvent(new Event("usuarioActualizado"));
+    navigate('/login');
+  };
 
   const renderContenido = () => {
     switch (seccionActiva) {

@@ -1,41 +1,50 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useCart } from "../context/CartContext";
-import { PayPalButtons } from "@paypal/react-paypal-js";
-
-
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [rolUsuario, setRolUsuario] = useState(null);
-  const { items, removeItem, totalPrice, totalItems, clearCart } = useCart();
-  const [showPay, setShowPay] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
 
-  // Si tus precios están en soles, convertimos a USD para sandbox (tasa demo)
-  const PEN_TO_USD = 0.27; // ajusta si quieres
-  const totalUSD = (Number(totalPrice) * PEN_TO_USD).toFixed(2);
-
+  const [usuarioLogueado, setUsuarioLogueado] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const checkLogin = () => {
-      const nombreUsuario = localStorage.getItem("nombreUsuario");
+    const actualizarUsuario = () => {
+      const nombre = localStorage.getItem("nombreUsuario");
       const rol = localStorage.getItem("rolUsuario");
 
-      setIsLoggedIn(!!nombreUsuario);
-      setRolUsuario(rol);
+      if (nombre && rol) {
+        setUsuarioLogueado({ nombre, rol });
+      } else {
+        setUsuarioLogueado(null);
+      }
     };
 
-    checkLogin();
+    window.addEventListener("usuarioActualizado", actualizarUsuario);
 
-    window.addEventListener("storage", checkLogin);
-    window.addEventListener("loginStateChanged", checkLogin);
+    actualizarUsuario();
+
+    const handleStorageChange = (e) => {
+      if (e.key === "nombreUsuario" || e.key === "rolUsuario") {
+        actualizarUsuario();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        actualizarUsuario();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("storage", checkLogin);
-      window.removeEventListener("loginStateChanged", checkLogin);
+      window.removeEventListener("storage", handleStorageChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("usuarioActualizado", actualizarUsuario);
     };
   }, []);
 
@@ -47,12 +56,24 @@ export default function Navbar() {
     }
   };
 
-  const toggleSidebar = () => {
-    const next = !sidebarOpen;
-    setSidebarOpen(next);
-    if (!next) setShowPay(false);
+  const handleMiSesion = () => {
+    if (usuarioLogueado?.rol === "admin") {
+      navigate("/admin");
+    } else if (usuarioLogueado?.rol === "cliente") {
+      navigate("/cliente");
+    }
   };
 
+
+
+  const removeItem = (id) => {
+    setCartItems(cartItems.filter((item) => item.id !== id));
+  };
+
+  const totalPrice = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   return (
     <>
@@ -61,6 +82,7 @@ export default function Navbar() {
         style={{ backgroundColor: "#e73535ff" }}
       >
         <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center w-full">
+          {/* Logo */}
           <Link
             to="/"
             className="flex items-center text-white font-bold text-xl select-none cursor-pointer"
@@ -74,6 +96,7 @@ export default function Navbar() {
             FARMACIAS PERÚ
           </Link>
 
+          {/* Barra de búsqueda */}
           <form
             onSubmit={handleSearch}
             className="hidden md:flex flex-grow max-w-md mx-6"
@@ -95,6 +118,7 @@ export default function Navbar() {
             </button>
           </form>
 
+          {/* Botones y carrito desktop */}
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={toggleSidebar}
@@ -115,28 +139,33 @@ export default function Navbar() {
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.55L23 6H6" />
               </svg>
-              Carrito ({totalItems})
+              Carrito ({cartItems.length})
             </button>
 
-            {isLoggedIn ? (
-              <Link
-                to={rolUsuario === "admin" ? "/admin" : "/cliente"}
+            {usuarioLogueado ? (
+              <button
+                onClick={handleMiSesion}
                 className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
               >
-                Mi Perfil
-              </Link>
-
+                Mi Sesión
+              </button>
             ) : (
               <Link
                 to="/login"
                 className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  setUsuarioLogueado(null);
+                }}
               >
                 Iniciar Sesión
               </Link>
             )}
+
+
           </div>
 
+          {/* Botones móviles: carrito y burger */}
           <div className="md:hidden flex items-center space-x-4">
             <button
               onClick={toggleSidebar}
@@ -157,7 +186,7 @@ export default function Navbar() {
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.55L23 6H6" />
               </svg>
-              <span className="text-sm">({totalItems})</span>
+              <span className="text-sm">({cartItems.length})</span>
             </button>
 
             <button
@@ -197,6 +226,7 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* Menú navegación principal */}
         <ul
           className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${isOpen
             ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
@@ -240,6 +270,7 @@ export default function Navbar() {
             </Link>
           </li>
 
+          {/* En móvil también mostramos carrito e iniciar sesión aquí */}
           <li className="md:hidden">
             <Link
               to="/carrito"
@@ -249,26 +280,35 @@ export default function Navbar() {
               Carrito de Compras
             </Link>
           </li>
-          <li className="md:hidden">
-            <Link
-              to={
-                isLoggedIn
-                  ? rolUsuario === "admin"
-                    ? "/admin"
-                    : "/cliente"
-                  : "/login"
-              }
-              className="block px-6 py-3 text-white hover:text-[#ff7777] font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              {isLoggedIn ? "Mi Perfil" : "Iniciar Sesión"}
-            </Link>
-          </li>
+          {!usuarioLogueado ? (
+            <li className="md:hidden">
+              <Link
+                to="/login"
+                className="block px-6 py-3 text-white hover:text-[#ff7777] font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Inicio de Sesión
+              </Link>
+            </li>
+          ) : (
+            <li className="md:hidden">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  handleMiSesion();
+                }}
+                className="block w-full text-left px-6 py-3 text-white hover:text-[#ff7777] font-medium"
+              >
+                Mi Sesión
+              </button>
+            </li>
+          )}
         </ul>
       </nav>
 
+      {/* Sidebar carrito */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${sidebarOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
@@ -283,82 +323,48 @@ export default function Navbar() {
         </div>
 
         <div className="flex-grow overflow-y-auto p-4">
-          {items.length === 0 ? (
+          {cartItems.length === 0 ? (
             <p className="text-gray-500">El carrito está vacío.</p>
           ) : (
-            items.map((item) => (
+            cartItems.map((item) => (
               <div
                 key={item.id}
                 className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2"
               >
                 <div>
-                  <p className="font-semibold text-gray-800">{item.nombre}</p>
+                  <p className="font-semibold text-gray-800">{item.name}</p>
                   <p className="text-sm text-gray-600">
-                    {item.qty} x S/.{Number(item.precio).toFixed(2)}
+                    {item.quantity} x S/.{item.price.toFixed(2)}
                   </p>
                 </div>
                 <button
                   onClick={() => removeItem(item.id)}
                   className="text-red-600 hover:text-red-800 font-bold text-lg focus:outline-none"
-                  aria-label={`Eliminar ${item.nombre}`}
+                  aria-label={`Eliminar ${item.name}`}
                 >
                   ×
                 </button>
               </div>
             ))
           )}
-
         </div>
 
+        {/* Total fijo abajo */}
         <div className="p-4 bg-red-50 border-t border-red-600">
           <div className="flex justify-between items-center font-semibold text-red-700 text-lg">
             <span>Total:</span>
             <span>S/.{totalPrice.toFixed(2)}</span>
           </div>
           <button
-            disabled={items.length === 0}
-            onClick={() => setShowPay(true)}
-            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${items.length === 0 ? "bg-red-300 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
-              }`}
+            disabled={cartItems.length === 0}
+            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${
+              cartItems.length === 0
+                ? "bg-red-300 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
           >
             Finalizar compra
           </button>
-          {showPay && items.length > 0 && (
-            <div className="mt-4">
-              <div className="text-sm text-gray-600 mb-2">
-                Monto a pagar (USD – sandbox): <strong>${totalUSD}</strong>
-              </div>
-              <PayPalButtons
-                style={{ layout: "vertical" }}
-                createOrder={(data, actions) => {
-                  return actions.order.create({
-                    purchase_units: [
-                      {
-                        amount: { value: totalUSD },
-                        description: "Compra en Farmacias Perú (modo prueba)"
-                      }
-                    ]
-                  });
-                }}
-                onApprove={async (data, actions) => {
-                  const details = await actions.order.capture();
-                  alert(`✅ Pago aprobado: ${details.id}`);
-                  clearCart();
-                  setShowPay(false);
-                  setSidebarOpen(false);
-                }}
-                onCancel={() => {
-                  alert("⚠️ Pago cancelado por el usuario");
-                  setShowPay(false);
-                }}
-                onError={(err) => {
-                  console.error(err);
-                  alert("❌ Ocurrió un error durante el pago");
-                  setShowPay(false);
-                }}
-              />
-            </div>
-          )}
         </div>
       </div>
     </>
