@@ -6,7 +6,6 @@ export default function Contacto() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 ">
           
-          {/* Datos de contacto */}
           <div className="space-y-8">
             <div>
               <h3 className="text-2xl font-semibold text-red-700 mb-2">Llámanos</h3>
@@ -32,7 +31,6 @@ export default function Contacto() {
             </div>
           </div>
 
-          {/* Mapa */}
           <div className="flex flex-col items-center">
             <h3 className="text-2xl font-semibold text-red-700 mb-4">Ubicación en Google Maps</h3>
             <div className="w-full aspect-video">

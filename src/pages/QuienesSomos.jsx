@@ -8,16 +8,13 @@ export default function QuienesSomos() {
     <div className="pt-35 px-4 md:px-10 lg:px-20 pb-15">
       <main className="max-w-7xl mx-auto space-y-12 text-center">
 
-        {/* Descripción general */}
         <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
           Somos una empresa peruana dedicada al cuidado de la salud, comercialización,
           dispensación y expendio de productos farmacéuticos, dispositivos médicos
           y productos sanitarios de calidad.
         </p>
 
-        {/* Flipboxes Misión y Visión */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-center items-center">
-          {/* Misión */}
           <div className="perspective" onClick={() => setMisionFlipped(!misionFlipped)}>
             <div className={`flip-card ${misionFlipped ? 'flipped' : ''}`}>
               <div className="flip-card-front bg-white border rounded-lg p-10 shadow-md flex items-center justify-center">
@@ -33,7 +30,6 @@ export default function QuienesSomos() {
             </div>
           </div>
 
-          {/* Visión */}
           <div className="perspective" onClick={() => setVisionFlipped(!visionFlipped)}>
             <div className={`flip-card ${visionFlipped ? 'flipped' : ''}`}>
               <div className="flip-card-front bg-white border rounded-lg p-10 shadow-md flex items-center justify-center">
@@ -48,13 +44,11 @@ export default function QuienesSomos() {
           </div>
         </div>
 
-        {/* Franja roja */}
         <div className="bg-[#cf2e2e] text-white text-lg md:text-xl py-6 px-4 rounded-md shadow-md">
           Como profesionales de la salud tenemos más de 10 años en el sector, cuidando la salud y el
           bienestar de todas las familias peruanas.
         </div>
 
-        {/* Nuestros valores */}
         <section className="mt-12">
           <h2 className="text-3xl font-bold text-[#cf2e2e] mb-8">Nuestros valores</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
