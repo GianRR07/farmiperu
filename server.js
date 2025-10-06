@@ -123,8 +123,8 @@ app.post('/login', (req, res) => {
       message: 'Login exitoso',
       nombre: row.nombre,
       rol: row.rol,
-      dni: row.dni, 
-      email: row.email 
+      dni: row.dni,
+      email: row.email
     });
   });
 });
@@ -180,6 +180,31 @@ app.get('/productos', (req, res) => {
       return res.status(500).send('Error al obtener los productos');
     }
     res.status(200).json(rows);
+  });
+});
+
+app.put('/productos/:id', (req, res) => {
+  const { id } = req.params;
+  const { nombre, descripcion, precio, presentacion, imagen } = req.body;
+
+  if (!nombre || !descripcion || !precio || !presentacion || !imagen) {
+    return res.status(400).send('Todos los campos son requeridos');
+  }
+
+  const query = `
+    UPDATE productos
+    SET nombre = ?, descripcion = ?, precio = ?, presentacion = ?, imagen = ?
+    WHERE id = ?
+  `;
+  db.run(query, [nombre, descripcion, precio, presentacion, imagen, id], function (err) {
+    if (err) {
+      console.error('Error al actualizar producto:', err);
+      return res.status(500).send('Error al actualizar el producto');
+    }
+    if (this.changes === 0) {
+      return res.status(404).send('Producto no encontrado');
+    }
+    res.status(200).send({ message: 'Producto actualizado correctamente' });
   });
 });
 

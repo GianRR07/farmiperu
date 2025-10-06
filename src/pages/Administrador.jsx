@@ -57,6 +57,10 @@ export default function Administrador() {
     if (opcion === "Eliminar producto") {
       obtenerProductos();
     }
+    if (opcion === "Editar producto") {
+      setEditProducto(null);
+      obtenerProductos();
+    }
   };
 
   const handleLogout = () => {
@@ -130,6 +134,18 @@ export default function Administrador() {
     imagen: "",
   });
 
+  const [editProducto, setEditProducto] = useState(null);
+  const [editForm, setEditForm] = useState({
+    id: "",
+    nombre: "",
+    descripcion: "",
+    precio: "",
+    presentacion: "",
+    imagen: "",
+  });
+
+
+
   const handleNuevoProductoChange = (e) => {
     const { name, value } = e.target;
     setNuevoProducto((prev) => ({ ...prev, [name]: value }));
@@ -164,6 +180,49 @@ export default function Administrador() {
     } catch (error) {
       console.error(error);
       setMensaje("Error al registrar el producto");
+    }
+  };
+
+  const handleEditStart = (prod) => {
+    setEditProducto(prod.id);
+    setEditForm({
+      id: prod.id,
+      nombre: prod.nombre,
+      descripcion: prod.descripcion,
+      precio: prod.precio,
+      presentacion: prod.presentacion,
+      imagen: prod.imagen,
+    });
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const actualizarProducto = async (e) => {
+    e.preventDefault();
+    const { id, nombre, descripcion, precio, presentacion, imagen } = editForm;
+
+    if (!id || !nombre || !descripcion || !precio || !presentacion || !imagen) {
+      setMensaje("Todos los campos son obligatorios");
+      return;
+    }
+
+    try {
+      await axios.put(`http://localhost:3001/productos/${id}`, {
+        nombre,
+        descripcion,
+        precio,
+        presentacion,
+        imagen,
+      });
+      setMensaje("Producto actualizado correctamente");
+      setEditProducto(null);
+      await obtenerProductos();
+    } catch (error) {
+      console.error(error);
+      setMensaje("Error al actualizar el producto");
     }
   };
 
@@ -342,7 +401,7 @@ export default function Administrador() {
                   {productos.map((producto) => (
                     <tr key={producto.id} className="text-center">
                       <td className="px-4 py-2 border">{producto.nombre}</td>
-                      <td className="px-4 py-2 border">${producto.precio}</td>
+                      <td className="px-4 py-2 border">S/{producto.precio}</td>
                       <td className="px-4 py-2 border">
                         <button
                           onClick={() => eliminarProducto(producto.id)}
@@ -358,6 +417,109 @@ export default function Administrador() {
             )}
             {mensaje && (
               <p className="mt-4 text-red-600 font-medium">{mensaje}</p>
+            )}
+          </div>
+        );
+
+      case "Editar producto":
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Editar Producto</h2>
+
+            {/* Tabla de productos con botón Editar */}
+            {productos.length === 0 ? (
+              <p>No hay productos disponibles.</p>
+            ) : (
+              <table className="min-w-full table-auto border mb-6">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="px-4 py-2 border">Nombre</th>
+                    <th className="px-4 py-2 border">Precio</th>
+                    <th className="px-4 py-2 border">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productos.map((p) => (
+                    <tr key={p.id} className="text-center">
+                      <td className="px-4 py-2 border">{p.nombre}</td>
+                      <td className="px-4 py-2 border">S/ {Number(p.precio).toFixed(2)}</td>
+                      <td className="px-4 py-2 border">
+                        <button
+                          onClick={() => handleEditStart(p)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                        >
+                          Editar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {/* Formulario de edición (aparece al elegir un producto) */}
+            {editProducto && (
+              <form onSubmit={actualizarProducto} className="space-y-4 max-w-xl">
+                <div className="grid grid-cols-1 gap-3">
+                  <input
+                    type="text"
+                    name="nombre"
+                    placeholder="Nombre del producto"
+                    value={editForm.nombre}
+                    onChange={handleEditChange}
+                    className="w-full p-2 border rounded"
+                  />
+                  <textarea
+                    name="descripcion"
+                    placeholder="Descripción"
+                    value={editForm.descripcion}
+                    onChange={handleEditChange}
+                    className="w-full p-2 border rounded"
+                  />
+                  <input
+                    type="number"
+                    name="precio"
+                    placeholder="Precio"
+                    value={editForm.precio}
+                    onChange={handleEditChange}
+                    className="w-full p-2 border rounded"
+                  />
+                  <input
+                    type="text"
+                    name="presentacion"
+                    placeholder="Presentación (ej: Caja, Unidad, etc)"
+                    value={editForm.presentacion}
+                    onChange={handleEditChange}
+                    className="w-full p-2 border rounded"
+                  />
+                  <input
+                    type="text"
+                    name="imagen"
+                    placeholder="URL de la imagen"
+                    value={editForm.imagen}
+                    onChange={handleEditChange}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                  >
+                    Guardar cambios
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditProducto(null)}
+                    className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+
+                {mensaje && <p className="mt-2 text-red-600 font-medium">{mensaje}</p>}
+              </form>
             )}
           </div>
         );

@@ -33,7 +33,7 @@ export default function Productos() {
               className="w-full h-48 object-contain mb-4"
             />
             <p className="text-lg font-medium text-green-600 mb-2">
-              ${producto.precio}
+              S/{producto.precio}
             </p>
 
             <div className="flex justify-center gap-4">
