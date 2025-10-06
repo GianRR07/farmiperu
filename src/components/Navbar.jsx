@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { PayPalButtons } from "@paypal/react-paypal-js";
+
 
 
 export default function Navbar() {
@@ -9,8 +11,12 @@ export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [rolUsuario, setRolUsuario] = useState(null);
-  const { items, removeItem, totalPrice, totalItems } = useCart();
+  const { items, removeItem, totalPrice, totalItems, clearCart } = useCart();
+  const [showPay, setShowPay] = useState(false);
 
+  // Si tus precios están en soles, convertimos a USD para sandbox (tasa demo)
+  const PEN_TO_USD = 0.27; // ajusta si quieres
+  const totalUSD = (Number(totalPrice) * PEN_TO_USD).toFixed(2);
 
 
   useEffect(() => {
@@ -42,7 +48,9 @@ export default function Navbar() {
   };
 
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+    const next = !sidebarOpen;
+    setSidebarOpen(next);
+    if (!next) setShowPay(false);
   };
 
 
@@ -309,13 +317,48 @@ export default function Navbar() {
           </div>
           <button
             disabled={items.length === 0}
-            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${items.length === 0
-              ? "bg-red-300 cursor-not-allowed"
-              : "bg-red-600 hover:bg-red-700"
+            onClick={() => setShowPay(true)}
+            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${items.length === 0 ? "bg-red-300 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
               }`}
           >
             Finalizar compra
           </button>
+          {showPay && items.length > 0 && (
+            <div className="mt-4">
+              <div className="text-sm text-gray-600 mb-2">
+                Monto a pagar (USD – sandbox): <strong>${totalUSD}</strong>
+              </div>
+              <PayPalButtons
+                style={{ layout: "vertical" }}
+                createOrder={(data, actions) => {
+                  return actions.order.create({
+                    purchase_units: [
+                      {
+                        amount: { value: totalUSD },
+                        description: "Compra en Farmacias Perú (modo prueba)"
+                      }
+                    ]
+                  });
+                }}
+                onApprove={async (data, actions) => {
+                  const details = await actions.order.capture();
+                  alert(`✅ Pago aprobado: ${details.id}`);
+                  clearCart();
+                  setShowPay(false);
+                  setSidebarOpen(false);
+                }}
+                onCancel={() => {
+                  alert("⚠️ Pago cancelado por el usuario");
+                  setShowPay(false);
+                }}
+                onError={(err) => {
+                  console.error(err);
+                  alert("❌ Ocurrió un error durante el pago");
+                  setShowPay(false);
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

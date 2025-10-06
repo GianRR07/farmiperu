@@ -1,9 +1,16 @@
 import { useCart } from "../context/CartContext";
+import { useState } from "react";
+import { PayPalButtons } from "@paypal/react-paypal-js";
+
 
 export default function CarritoCompras({ isOpen, onClose }) {
   const open = isOpen ?? true;
   const { items, setQty, removeItem, clearCart, totalItems, totalPrice } = useCart();
-  console.log('items en carrito:', items);
+  const [showPay, setShowPay] = useState(false);
+  const PEN_TO_USD = 0.27; // tasa demo
+  const totalUSD = (Number(totalPrice) * PEN_TO_USD).toFixed(2);
+
+
 
 
   return (
