@@ -17,24 +17,35 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addItem = (product, qty = 1) => {
-    setItems(prev => {
-      const i = prev.findIndex(p => p.id === product.id);
+    setItems((prev) => {
+      const i = prev.findIndex((p) => p.id === product.id);
       if (i !== -1) {
         const copy = [...prev];
         copy[i] = { ...copy[i], qty: copy[i].qty + qty };
         return copy;
       }
-      return [...prev, { id: product.id, nombre: product.nombre, precio: product.precio, imagen: product.imagen, presentacion: product.presentacion, qty }];
+      return [
+        ...prev,
+        {
+          id: product.id,
+          nombre: product.nombre,
+          precio: product.precio,
+          imagen: product.imagen,
+          presentacion: product.presentacion,
+          qty,
+        },
+      ];
     });
   };
 
-  const removeItem = (id) => setItems(prev => prev.filter(p => p.id !== id));
+  const removeItem = (id) =>
+    setItems((prev) => prev.filter((p) => p.id !== id));
 
   const setQty = (id, qty) => {
-    setItems(prev =>
+    setItems((prev) =>
       prev
-        .map(p => (p.id === id ? { ...p, qty: Math.max(1, qty) } : p))
-        .filter(p => p.qty > 0)
+        .map((p) => (p.id === id ? { ...p, qty: Math.max(1, qty) } : p))
+        .filter((p) => p.qty > 0)
     );
   };
 
@@ -49,7 +60,15 @@ export function CartProvider({ children }) {
     [items]
   );
 
-  const value = { items, addItem, removeItem, setQty, clearCart, totalItems, totalPrice };
+  const value = {
+    items,
+    addItem,
+    removeItem,
+    setQty,
+    clearCart,
+    totalItems,
+    totalPrice,
+  };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 

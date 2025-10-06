@@ -1,78 +1,88 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginCliente() {
-  const [nombreUsuario, setNombreUsuario] = useState('');
-  const [seccionActiva, setSeccionActiva] = useState('');
+  const [nombreUsuario, setNombreUsuario] = useState("");
+  const [seccionActiva, setSeccionActiva] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const nombre = localStorage.getItem('nombreUsuario');
-    const rol = localStorage.getItem('rolUsuario');
+    const nombre = localStorage.getItem("nombreUsuario");
+    const rol = localStorage.getItem("rolUsuario");
 
     if (!nombre) {
-      navigate('/login');
+      navigate("/login");
     } else {
       setNombreUsuario(nombre);
     }
   }, [navigate]);
 
   const handleLogout = () => {
-  localStorage.removeItem('nombreUsuario');
-  localStorage.removeItem('rolUsuario');
-  localStorage.removeItem('email');
-  localStorage.removeItem('dni');
+    localStorage.removeItem("nombreUsuario");
+    localStorage.removeItem("rolUsuario");
+    localStorage.removeItem("email");
+    localStorage.removeItem("dni");
 
-  
-  window.dispatchEvent(new Event('loginStateChanged'));
+    window.dispatchEvent(new Event("loginStateChanged"));
 
-  navigate('/login');
-};
-
+    navigate("/");
+  };
 
   const renderContenido = () => {
     switch (seccionActiva) {
-      case 'perfil':
+      case "perfil":
         return (
           <div>
             <h2 className="text-xl font-semibold mb-2">👤 Mi Perfil</h2>
-            <p><strong>Nombre:</strong> {nombreUsuario}</p>
-            <p><strong>Email:</strong> usuariao@email.com</p>
-            <p><strong>DNI:</strong> ********</p>
+            <p>
+              <strong>Nombre:</strong> {nombreUsuario}
+            </p>
+            <p>
+              <strong>Email:</strong> usuariao@email.com
+            </p>
+            <p>
+              <strong>DNI:</strong> ********
+            </p>
           </div>
         );
-      case 'historial':
+      case "historial":
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">🛒 Historial de Compras</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              🛒 Historial de Compras
+            </h2>
             <p>No has realizado ninguna compra aún.</p>
           </div>
         );
-      case 'carrito':
+      case "carrito":
         return (
           <div>
             <h2 className="text-xl font-semibold mb-2">🛍️ Mi Carrito</h2>
             <p>No tienes productos en el carrito.</p>
           </div>
         );
-      case 'metodosPago':
+      case "metodosPago":
         return (
           <div>
             <h2 className="text-xl font-semibold mb-2">💳 Métodos de Pago</h2>
             <p>Aún no has agregado ningún método de pago.</p>
           </div>
         );
-      case 'direcciones':
+      case "direcciones":
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">🏠 Direcciones de Envío</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              🏠 Direcciones de Envío
+            </h2>
             <p>No tienes direcciones guardadas.</p>
           </div>
         );
-      case 'ofertas':
+      case "ofertas":
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">🎉 Promociones y Ofertas</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              🎉 Promociones y Ofertas
+            </h2>
             <p>No hay promociones disponibles en este momento.</p>
           </div>
         );
@@ -91,31 +101,31 @@ export default function LoginCliente() {
 
           <div className="space-y-3">
             <button
-              onClick={() => setSeccionActiva('perfil')}
+              onClick={() => setSeccionActiva("perfil")}
               className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
             >
               Ver Perfil
             </button>
             <button
-              onClick={() => setSeccionActiva('historial')}
+              onClick={() => setSeccionActiva("historial")}
               className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
             >
               Historial de Compras
             </button>
             <button
-              onClick={() => setSeccionActiva('carrito')}
+              onClick={() => setSeccionActiva("carrito")}
               className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
             >
               Métodos de Pago
             </button>
             <button
-              onClick={() => setSeccionActiva('direcciones')}
+              onClick={() => setSeccionActiva("direcciones")}
               className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
             >
               Direcciones de Envío
             </button>
             <button
-              onClick={() => setSeccionActiva('ofertas')}
+              onClick={() => setSeccionActiva("ofertas")}
               className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
             >
               Promociones y Ofertas
@@ -130,7 +140,9 @@ export default function LoginCliente() {
         </div>
 
         <div className="w-3/4 bg-white p-8 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Sección activa</h2>
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">
+            Sección activa
+          </h2>
           {renderContenido()}
         </div>
       </div>

@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { PayPalButtons } from "@paypal/react-paypal-js";
-
-
+import { useLocation } from "react-router-dom";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +17,13 @@ export default function Navbar() {
   const PEN_TO_USD = 0.27; // ajusta si quieres
   const totalUSD = (Number(totalPrice) * PEN_TO_USD).toFixed(2);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsOpen(false);
+    setSidebarOpen(false);
+    setShowPay(false);
+  }, [location]);
 
   useEffect(() => {
     const checkLogin = () => {
@@ -52,7 +58,6 @@ export default function Navbar() {
     setSidebarOpen(next);
     if (!next) setShowPay(false);
   };
-
 
   return (
     <>
@@ -122,10 +127,10 @@ export default function Navbar() {
               <Link
                 to={rolUsuario === "admin" ? "/admin" : "/cliente"}
                 className="bg-white text-[#e73535] font-semibold px-4 py-2 rounded-md hover:bg-red-100 transition-colors"
+                onClick={() => setIsOpen(false)} // <-- AÑADE ESTA LÍNEA AQUÍ
               >
                 Mi Perfil
               </Link>
-
             ) : (
               <Link
                 to="/login"
@@ -198,10 +203,11 @@ export default function Navbar() {
         </div>
 
         <ul
-          className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${isOpen
-            ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
-            : "top-[-490px] opacity-0 pointer-events-none"
-            } md:relative md:top-0 md:opacity-100 md:pointer-events-auto px-6 md:px-0 py-4 md:py-0 z-40`}
+          className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${
+            isOpen
+              ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
+              : "top-[-490px] opacity-0 pointer-events-none"
+          } md:relative md:top-0 md:opacity-100 md:pointer-events-auto px-6 md:px-0 py-4 md:py-0 z-40`}
         >
           <li>
             <Link
@@ -268,8 +274,9 @@ export default function Navbar() {
       </nav>
 
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${sidebarOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${
+          sidebarOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-red-700">Carrito</h2>
@@ -307,7 +314,6 @@ export default function Navbar() {
               </div>
             ))
           )}
-
         </div>
 
         <div className="p-4 bg-red-50 border-t border-red-600">
@@ -318,8 +324,11 @@ export default function Navbar() {
           <button
             disabled={items.length === 0}
             onClick={() => setShowPay(true)}
-            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${items.length === 0 ? "bg-red-300 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
-              }`}
+            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${
+              items.length === 0
+                ? "bg-red-300 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
           >
             Finalizar compra
           </button>
@@ -335,9 +344,9 @@ export default function Navbar() {
                     purchase_units: [
                       {
                         amount: { value: totalUSD },
-                        description: "Compra en Farmacias Perú (modo prueba)"
-                      }
-                    ]
+                        description: "Compra en Farmacias Perú (modo prueba)",
+                      },
+                    ],
                   });
                 }}
                 onApprove={async (data, actions) => {
