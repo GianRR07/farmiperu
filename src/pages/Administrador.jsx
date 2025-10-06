@@ -1,65 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Administrador() {
-  const [contenido, setContenido] = useState('Selecciona una opción');
-  const [adminNombre, setAdminNombre] = useState('');
-  const [adminEmail, setAdminEmail] = useState('');
-  const [adminDni, setAdminDni] = useState('');
+  const [contenido, setContenido] = useState("Selecciona una opción");
+  const [adminNombre, setAdminNombre] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminDni, setAdminDni] = useState("");
   const [usuarios, setUsuarios] = useState([]);
-  const [nuevoAdmin, setNuevoAdmin] = useState({ nombre: '', dni: '', email: '', password: '' });
-  const [mensaje, setMensaje] = useState('');
+  const [nuevoAdmin, setNuevoAdmin] = useState({
+    nombre: "",
+    dni: "",
+    email: "",
+    password: "",
+  });
+  const [mensaje, setMensaje] = useState("");
   const [productos, setProductos] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const nombre = localStorage.getItem('nombreUsuario');
-    const email = localStorage.getItem('email');
-    const dni = localStorage.getItem('dni');
-    const rol = localStorage.getItem('rolUsuario');
+    const nombre = localStorage.getItem("nombreUsuario");
+    const email = localStorage.getItem("email");
+    const dni = localStorage.getItem("dni");
+    const rol = localStorage.getItem("rolUsuario");
 
-    if (rol !== 'admin') {
-      navigate('/login');
+    if (rol !== "admin") {
+      navigate("/login");
     } else {
-      setAdminNombre(nombre || '');
-      setAdminEmail(email || '');
-      setAdminDni(dni || '');
+      setAdminNombre(nombre || "");
+      setAdminEmail(email || "");
+      setAdminDni(dni || "");
     }
   }, [navigate]);
 
   const manejarClick = async (opcion) => {
     setContenido(opcion);
-    setMensaje('');
+    setMensaje("");
     setUsuarios([]);
 
-    if (opcion === 'Lista de Administradores' || opcion === 'Lista de Clientes') {
+    if (
+      opcion === "Lista de Administradores" ||
+      opcion === "Lista de Clientes"
+    ) {
       try {
-        const res = await axios.get('http://localhost:3001/usuarios');
-        const filtro = opcion === 'Lista de Administradores' ? 'admin' : 'cliente';
-        const filtrados = res.data.filter(user => user.rol === filtro);
+        const res = await axios.get("http://localhost:3001/usuarios");
+        const filtro =
+          opcion === "Lista de Administradores" ? "admin" : "cliente";
+        const filtrados = res.data.filter((user) => user.rol === filtro);
         setUsuarios(filtrados);
       } catch (error) {
-        setMensaje('Error al obtener los usuarios');
+        setMensaje("Error al obtener los usuarios");
       }
     }
 
-    if (opcion === 'Eliminar producto') {
+    if (opcion === "Eliminar producto") {
       obtenerProductos();
     }
-
   };
 
   const handleLogout = () => {
     localStorage.clear();
     window.dispatchEvent(new Event("usuarioActualizado"));
-    navigate('/Login');
+    navigate("/");
   };
 
   const handleNuevoAdminChange = (e) => {
     const { name, value } = e.target;
-    setNuevoAdmin(prev => ({ ...prev, [name]: value }));
+    setNuevoAdmin((prev) => ({ ...prev, [name]: value }));
   };
 
   const registrarAdmin = async (e) => {
@@ -67,63 +75,64 @@ export default function Administrador() {
     const { nombre, dni, email, password } = nuevoAdmin;
 
     if (!nombre || !dni || !email || !password) {
-      setMensaje('Todos los campos son obligatorios');
+      setMensaje("Todos los campos son obligatorios");
       return;
     }
 
     try {
-      await axios.post('http://localhost:3001/registro', {
-        nombre, dni, email, password, rol: 'admin'
+      await axios.post("http://localhost:3001/registro", {
+        nombre,
+        dni,
+        email,
+        password,
+        rol: "admin",
       });
-      setMensaje('Administrador registrado correctamente');
-      setNuevoAdmin({ nombre: '', dni: '', email: '', password: '' });
+      setMensaje("Administrador registrado correctamente");
+      setNuevoAdmin({ nombre: "", dni: "", email: "", password: "" });
     } catch (error) {
       if (error.response) {
         setMensaje(error.response.data);
       } else {
-        setMensaje('Error al registrar administrador');
+        setMensaje("Error al registrar administrador");
       }
     }
   };
 
-
   const obtenerProductos = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/productos');
+      const res = await axios.get("http://localhost:3001/productos");
       setProductos(res.data);
     } catch (error) {
-      setMensaje('Error al obtener productos');
+      setMensaje("Error al obtener productos");
     }
   };
 
-
-
-
   const eliminarProducto = async (id) => {
-    const confirmar = window.confirm('¿Estás seguro de que deseas eliminar este producto?');
+    const confirmar = window.confirm(
+      "¿Estás seguro de que deseas eliminar este producto?"
+    );
     if (!confirmar) return;
 
     try {
       await axios.delete(`http://localhost:3001/productos/${id}`);
-      setMensaje('Producto eliminado correctamente');
+      setMensaje("Producto eliminado correctamente");
       obtenerProductos();
     } catch (error) {
-      setMensaje('Error al eliminar el producto');
+      setMensaje("Error al eliminar el producto");
     }
   };
 
-
   const [nuevoProducto, setNuevoProducto] = useState({
-    nombre: '',
-    descripcion: '',
-    precio: '',
-    presentacion: '',
-    imagen: ''
+    nombre: "",
+    descripcion: "",
+    precio: "",
+    presentacion: "",
+    imagen: "",
   });
 
   const handleNuevoProductoChange = (e) => {
     const { name, value } = e.target;
-    setNuevoProducto(prev => ({ ...prev, [name]: value }));
+    setNuevoProducto((prev) => ({ ...prev, [name]: value }));
   };
 
   const registrarProducto = async (e) => {
@@ -131,54 +140,105 @@ export default function Administrador() {
     const { nombre, descripcion, precio, presentacion, imagen } = nuevoProducto;
 
     if (!nombre || !descripcion || !precio || !presentacion || !imagen) {
-      setMensaje('Todos los campos son obligatorios');
+      setMensaje("Todos los campos son obligatorios");
       return;
     }
 
     try {
-      await axios.post('http://localhost:3001/productos', {
-        nombre, descripcion, precio, presentacion, imagen
+      await axios.post("http://localhost:3001/productos", {
+        nombre,
+        descripcion,
+        precio,
+        presentacion,
+        imagen,
       });
 
-      setMensaje('Producto registrado correctamente');
-      setNuevoProducto({ nombre: '', descripcion: '', precio: '', presentacion: '', imagen: '' });
+      setMensaje("Producto registrado correctamente");
+      setNuevoProducto({
+        nombre: "",
+        descripcion: "",
+        precio: "",
+        presentacion: "",
+        imagen: "",
+      });
     } catch (error) {
       console.error(error);
-      setMensaje('Error al registrar el producto');
+      setMensaje("Error al registrar el producto");
     }
   };
 
   const renderContenido = () => {
     switch (contenido) {
-      case 'perfil':
+      case "perfil":
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">👤 Perfil del Administrador</h2>
-            <p><strong>Nombre:</strong> {adminNombre}</p>
-            <p><strong>Email:</strong> {adminEmail}</p>
-            <p><strong>DNI:</strong> {adminDni}</p>
+            <h2 className="text-xl font-semibold mb-2">
+              👤 Perfil del Administrador
+            </h2>
+            <p>
+              <strong>Nombre:</strong> {adminNombre}
+            </p>
+            <p>
+              <strong>Email:</strong> {adminEmail}
+            </p>
+            <p>
+              <strong>DNI:</strong> {adminDni}
+            </p>
           </div>
         );
-      case 'Registrar Nuevo Administrador':
+      case "Registrar Nuevo Administrador":
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-4">Registrar Nuevo Administrador</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Registrar Nuevo Administrador
+            </h2>
             <form onSubmit={registrarAdmin} className="space-y-4">
-              <input type="text" name="nombre" placeholder="Nombre" value={nuevoAdmin.nombre} onChange={handleNuevoAdminChange}
-                className="w-full p-2 border rounded" />
-              <input type="text" name="dni" placeholder="DNI" value={nuevoAdmin.dni} onChange={handleNuevoAdminChange}
-                className="w-full p-2 border rounded" />
-              <input type="email" name="email" placeholder="Correo" value={nuevoAdmin.email} onChange={handleNuevoAdminChange}
-                className="w-full p-2 border rounded" />
-              <input type="password" name="password" placeholder="Contraseña" value={nuevoAdmin.password} onChange={handleNuevoAdminChange}
-                className="w-full p-2 border rounded" />
-              <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Registrar</button>
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Nombre"
+                value={nuevoAdmin.nombre}
+                onChange={handleNuevoAdminChange}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="text"
+                name="dni"
+                placeholder="DNI"
+                value={nuevoAdmin.dni}
+                onChange={handleNuevoAdminChange}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Correo"
+                value={nuevoAdmin.email}
+                onChange={handleNuevoAdminChange}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="Contraseña"
+                value={nuevoAdmin.password}
+                onChange={handleNuevoAdminChange}
+                className="w-full p-2 border rounded"
+              />
+              <button
+                type="submit"
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                Registrar
+              </button>
             </form>
-            {mensaje && <p className="mt-4 text-red-600 font-medium">{mensaje}</p>}
+            {mensaje && (
+              <p className="mt-4 text-red-600 font-medium">{mensaje}</p>
+            )}
           </div>
         );
-      case 'Lista de Administradores':
-      case 'Lista de Clientes':
+      case "Lista de Administradores":
+      case "Lista de Clientes":
         return (
           <div>
             <h2 className="text-xl font-semibold mb-4">{contenido}</h2>
@@ -206,28 +266,64 @@ export default function Administrador() {
             )}
           </div>
         );
-      case 'Registrar Producto':
+      case "Registrar Producto":
         return (
           <div>
             <h2 className="text-xl font-semibold mb-4">Registrar Producto</h2>
             <form onSubmit={registrarProducto} className="space-y-4">
-              <input type="text" name="nombre" placeholder="Nombre del producto" value={nuevoProducto.nombre} onChange={handleNuevoProductoChange}
-                className="w-full p-2 border rounded" />
-              <textarea name="descripcion" placeholder="Descripción" value={nuevoProducto.descripcion} onChange={handleNuevoProductoChange}
-                className="w-full p-2 border rounded" />
-              <input type="number" name="precio" placeholder="Precio" value={nuevoProducto.precio} onChange={handleNuevoProductoChange}
-                className="w-full p-2 border rounded" />
-              <input type="text" name="presentacion" placeholder="Presentación (ej: Caja, Unidad, etc)" value={nuevoProducto.presentacion} onChange={handleNuevoProductoChange}
-                className="w-full p-2 border rounded" />
-              <input type="text" name="imagen" placeholder="URL de la imagen" value={nuevoProducto.imagen} onChange={handleNuevoProductoChange}
-                className="w-full p-2 border rounded" />
-              <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Registrar Producto</button>
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Nombre del producto"
+                value={nuevoProducto.nombre}
+                onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded"
+              />
+              <textarea
+                name="descripcion"
+                placeholder="Descripción"
+                value={nuevoProducto.descripcion}
+                onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="number"
+                name="precio"
+                placeholder="Precio"
+                value={nuevoProducto.precio}
+                onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="text"
+                name="presentacion"
+                placeholder="Presentación (ej: Caja, Unidad, etc)"
+                value={nuevoProducto.presentacion}
+                onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="text"
+                name="imagen"
+                placeholder="URL de la imagen"
+                value={nuevoProducto.imagen}
+                onChange={handleNuevoProductoChange}
+                className="w-full p-2 border rounded"
+              />
+              <button
+                type="submit"
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                Registrar Producto
+              </button>
             </form>
-            {mensaje && <p className="mt-4 text-red-600 font-medium">{mensaje}</p>}
+            {mensaje && (
+              <p className="mt-4 text-red-600 font-medium">{mensaje}</p>
+            )}
           </div>
         );
 
-      case 'Eliminar producto':
+      case "Eliminar producto":
         return (
           <div>
             <h2 className="text-xl font-semibold mb-4">Eliminar Producto</h2>
@@ -243,7 +339,7 @@ export default function Administrador() {
                   </tr>
                 </thead>
                 <tbody>
-                  {productos.map(producto => (
+                  {productos.map((producto) => (
                     <tr key={producto.id} className="text-center">
                       <td className="px-4 py-2 border">{producto.nombre}</td>
                       <td className="px-4 py-2 border">${producto.precio}</td>
@@ -260,7 +356,9 @@ export default function Administrador() {
                 </tbody>
               </table>
             )}
-            {mensaje && <p className="mt-4 text-red-600 font-medium">{mensaje}</p>}
+            {mensaje && (
+              <p className="mt-4 text-red-600 font-medium">{mensaje}</p>
+            )}
           </div>
         );
 
@@ -271,45 +369,79 @@ export default function Administrador() {
 
   return (
     <div className="pt-30 bg-gray-50 min-h-screen max-h-screen overflow-y-auto px-6 pt-8">
-      <h1 className="text-4xl font-bold text-red-600 mb-8">Bienvenido Administrador</h1>
+      <h1 className="text-4xl font-bold text-red-600 mb-8">
+        Bienvenido Administrador
+      </h1>
 
       <div className="flex gap-6 min-h-[75vh]">
         <div className="w-1/4 bg-white shadow-md rounded-lg p-4 space-y-4">
-          <button onClick={() => manejarClick('perfil')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("perfil")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Ver Perfil
           </button>
-          <button onClick={() => manejarClick('Registrar Producto')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("Registrar Producto")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Registrar Producto
           </button>
-          <button onClick={() => manejarClick('Registrar Nuevo Administrador')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("Registrar Nuevo Administrador")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Registrar Nuevo Administrador
           </button>
-          <button onClick={() => manejarClick('Eliminar producto')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("Eliminar producto")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Eliminar producto
           </button>
-          <button onClick={() => manejarClick('Editar producto')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("Editar producto")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Editar producto
           </button>
-          <button onClick={() => manejarClick('Generar Reporte de ventas')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("Generar Reporte de ventas")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Generar Reporte de ventas
           </button>
-          <button onClick={() => manejarClick('Revisar Ventas')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("Revisar Ventas")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Revisar Ventas
           </button>
-          <button onClick={() => manejarClick('Lista de Administradores')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("Lista de Administradores")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Lista de Administradores
           </button>
-          <button onClick={() => manejarClick('Lista de Clientes')} className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={() => manejarClick("Lista de Clientes")}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
             Lista de Clientes
           </button>
 
-          <button onClick={handleLogout} className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded">
+          <button
+            onClick={handleLogout}
+            className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded"
+          >
             Cerrar Sesión
           </button>
         </div>
 
         <div className="flex-1 bg-white shadow-md rounded-lg p-6 overflow-y-auto">
-          <h2 className="text-2xl font-bold text-gray-700 mb-4">Sección activa</h2>
+          <h2 className="text-2xl font-bold text-gray-700 mb-4">
+            Sección activa
+          </h2>
           {renderContenido()}
         </div>
       </div>
