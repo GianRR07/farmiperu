@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([
-
-  ]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [rolUsuario, setRolUsuario] = useState(null);
+  const { items, removeItem, totalPrice, totalItems } = useCart();
+
 
 
   useEffect(() => {
@@ -44,14 +45,6 @@ export default function Navbar() {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-  };
-
-  const totalPrice = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
 
   return (
     <>
@@ -114,7 +107,7 @@ export default function Navbar() {
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.55L23 6H6" />
               </svg>
-              Carrito ({cartItems.length})
+              Carrito ({totalItems})
             </button>
 
             {isLoggedIn ? (
@@ -156,7 +149,7 @@ export default function Navbar() {
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.55L23 6H6" />
               </svg>
-              <span className="text-sm">({cartItems.length})</span>
+              <span className="text-sm">({totalItems})</span>
             </button>
 
             <button
@@ -282,30 +275,31 @@ export default function Navbar() {
         </div>
 
         <div className="flex-grow overflow-y-auto p-4">
-          {cartItems.length === 0 ? (
+          {items.length === 0 ? (
             <p className="text-gray-500">El carrito está vacío.</p>
           ) : (
-            cartItems.map((item) => (
+            items.map((item) => (
               <div
                 key={item.id}
                 className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2"
               >
                 <div>
-                  <p className="font-semibold text-gray-800">{item.name}</p>
+                  <p className="font-semibold text-gray-800">{item.nombre}</p>
                   <p className="text-sm text-gray-600">
-                    {item.quantity} x S/.{item.price.toFixed(2)}
+                    {item.qty} x S/.{Number(item.precio).toFixed(2)}
                   </p>
                 </div>
                 <button
                   onClick={() => removeItem(item.id)}
                   className="text-red-600 hover:text-red-800 font-bold text-lg focus:outline-none"
-                  aria-label={`Eliminar ${item.name}`}
+                  aria-label={`Eliminar ${item.nombre}`}
                 >
                   ×
                 </button>
               </div>
             ))
           )}
+
         </div>
 
         <div className="p-4 bg-red-50 border-t border-red-600">
@@ -314,8 +308,8 @@ export default function Navbar() {
             <span>S/.{totalPrice.toFixed(2)}</span>
           </div>
           <button
-            disabled={cartItems.length === 0}
-            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${cartItems.length === 0
+            disabled={items.length === 0}
+            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${items.length === 0
               ? "bg-red-300 cursor-not-allowed"
               : "bg-red-600 hover:bg-red-700"
               }`}
