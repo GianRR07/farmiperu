@@ -176,21 +176,53 @@ export default function LoginCliente() {
       case "historial":
         return <HistorialComprasCliente email={emailUsuario} dni={dniUsuario} />;
 
-      case "carrito":
-        return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">🛍️ Mi Carrito</h2>
-            <p>No tienes productos en el carrito.</p>
-          </div>
-        );
+     
 
       case "metodosPago":
-        return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">💳 Métodos de Pago</h2>
-            <p>Aún no has agregado ningún método de pago.</p>
+  return (
+    <div className="space-y-5">
+      <h2 className="text-xl font-semibold mb-3">💳 Métodos de Pago</h2>
+
+      <div className="bg-blue-50 border border-blue-200 p-5 rounded-lg shadow-sm">
+        <p className="text-gray-700 mb-3 leading-relaxed">
+          En <strong>FarmiPerú</strong> usamos <span className="font-semibold">PayPal</span> como nuestro método
+          principal de pago, garantizando transacciones seguras y rápidas 🔒.
+        </p>
+        <ul className="list-disc pl-5 text-gray-600 mb-4">
+          <li>Protege tus datos y tus compras.</li>
+          <li>Permite pagar con tarjeta o saldo PayPal.</li>
+          <li>Pagos internacionales sin complicaciones.</li>
+        </ul>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <img
+            src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_74x46.jpg"
+            alt="PayPal logo"
+            className="w-32"
+          />
+          
+          {/* Este es el contenedor que coloca el texto arriba del botón */}
+          <div className="text-center sm:text-left">
+            <p className="text-gray-700 mb-2">
+              Si eres nuevo, te invito a crearte una cuenta nueva.
+            </p>
+            <button
+              onClick={() => window.open("https://www.paypal.com/signup", "_blank")}
+              className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 px-5 py-2 rounded-md font-semibold shadow-md transition-all"
+            >
+              Crear cuenta PayPal
+            </button>
           </div>
-        );
+        </div>
+      </div>
+
+      <div className="text-sm text-gray-600">
+        ¿Tienes dudas? Contáctanos para ayudarte a configurar tu pago 💬
+      </div>
+    </div>
+  );
+
+
 
       case "direcciones":
         return (
@@ -212,12 +244,28 @@ export default function LoginCliente() {
         );
 
       case "ofertas":
-        return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">🎉 Promociones y Ofertas</h2>
-            <p>No hay promociones disponibles en este momento.</p>
-          </div>
-        );
+  return (
+    <div className="space-y-5">
+      <h2 className="text-xl font-semibold mb-3">Promociones y Ofertas</h2>
+
+      <div className="bg-gradient-to-b from-red-500 to-white p-6 rounded-lg shadow-xl text-center">
+        <h3 className="text-2xl font-bold text-gray-900 mb-3">
+          ¡Compra más de 80 soles y recibe DELIVERY GRATIS!
+        </h3>
+        <p className="text-lg text-gray-800 mb-4">
+          ¡No dejes pasar esta increíble oferta! Solo por tiempo limitado, disfruta de envío sin costo al realizar compras superiores a 80 soles.
+        </p>
+        <button
+          onClick={() => window.open("/", "_self")}
+          className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-semibold transition-all shadow-md"
+        >
+          ¡Aprovecha esta oferta!
+        </button>
+      </div>
+    </div>
+  );
+
+
 
       default:
         return <p className="text-gray-600">Selecciona una opción</p>;
@@ -236,7 +284,7 @@ export default function LoginCliente() {
           <div className="space-y-3">
             <button onClick={() => setSeccionActiva("perfil")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Ver Perfil</button>
             <button onClick={() => setSeccionActiva("historial")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Historial de Compras</button>
-            <button onClick={() => setSeccionActiva("carrito")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Mi Carrito</button>
+            
             <button onClick={() => setSeccionActiva("metodosPago")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Métodos de Pago</button>
             <button onClick={() => setSeccionActiva("direcciones")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Direcciones de Envío</button>
             <button onClick={() => setSeccionActiva("ofertas")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Promociones y Ofertas</button>
