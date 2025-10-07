@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import DireccionMap from "../components/DireccionMap"; // ⬅️ Tu componente del mapa
 
 export default function LoginCliente() {
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [emailUsuario, setEmailUsuario] = useState("");
   const [dniUsuario, setDniUsuario] = useState("");
-  const [seccionActiva, setSeccionActiva] = useState("");
+  const [seccionActiva, setSeccionActiva] = useState("perfil"); // ⬅️ Mostrar perfil al iniciar
+  const [direccionSeleccionada, setDireccionSeleccionada] = useState(null);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const nombre = localStorage.getItem("nombreUsuario");
@@ -22,6 +23,7 @@ export default function LoginCliente() {
       setNombreUsuario(nombre);
       setEmailUsuario(email || "");
       setDniUsuario(dni || "");
+      setSeccionActiva("perfil");
     }
   }, [navigate]);
 
@@ -30,12 +32,9 @@ export default function LoginCliente() {
     localStorage.removeItem("rolUsuario");
     localStorage.removeItem("email");
     localStorage.removeItem("dni");
-
     window.dispatchEvent(new Event("loginStateChanged"));
-
     navigate("/");
   };
-
 
   function HistorialComprasCliente({ email, dni }) {
     const [ventas, setVentas] = React.useState([]);
@@ -149,23 +148,31 @@ export default function LoginCliente() {
     );
   }
 
+  // 👇 CONTENIDO DE CADA SECCIÓN
   const renderContenido = () => {
     switch (seccionActiva) {
       case "perfil":
         return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">👤 Mi Perfil</h2>
-            <p>
-              <strong>Nombre:</strong> {nombreUsuario}
-            </p>
-            <p>
-              <strong>Email:</strong> usuariao@email.com
-            </p>
-            <p>
-              <strong>DNI:</strong> ********
-            </p>
+          <div className="p-6 rounded-xl bg-gradient-to-br from-red-50 to-white shadow-lg">
+            <div className="flex items-center gap-4">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/219/219970.png"
+                alt="perfil"
+                className="w-20 h-20 rounded-full border-2 border-red-400"
+              />
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">{nombreUsuario}</h2>
+                <p className="text-gray-600">👤 Cliente registrado</p>
+              </div>
+            </div>
+            <div className="mt-6 space-y-2 text-gray-700">
+              <p><strong>Email:</strong> {emailUsuario}</p>
+              <p><strong>DNI:</strong> {dniUsuario}</p>
+              <p><strong>Estado:</strong> Activo ✅</p>
+            </div>
           </div>
         );
+
       case "historial":
         return <HistorialComprasCliente email={emailUsuario} dni={dniUsuario} />;
 
@@ -176,6 +183,7 @@ export default function LoginCliente() {
             <p>No tienes productos en el carrito.</p>
           </div>
         );
+
       case "metodosPago":
         return (
           <div>
@@ -183,24 +191,34 @@ export default function LoginCliente() {
             <p>Aún no has agregado ningún método de pago.</p>
           </div>
         );
+
       case "direcciones":
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">
-              🏠 Direcciones de Envío
-            </h2>
-            <p>No tienes direcciones guardadas.</p>
+            <h2 className="text-xl font-semibold mb-3">🏠 Direcciones de Envío</h2>
+            <p className="text-gray-600 mb-3">
+              Selecciona tu ubicación actual o busca una nueva dirección.
+            </p>
+
+            <DireccionMap onDireccionSeleccionada={setDireccionSeleccionada} />
+
+            {direccionSeleccionada && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-300 rounded-md">
+                <strong>📍 Dirección guardada:</strong>
+                <p>{direccionSeleccionada.direccion}</p>
+              </div>
+            )}
           </div>
         );
+
       case "ofertas":
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">
-              🎉 Promociones y Ofertas
-            </h2>
+            <h2 className="text-xl font-semibold mb-2">🎉 Promociones y Ofertas</h2>
             <p>No hay promociones disponibles en este momento.</p>
           </div>
         );
+
       default:
         return <p className="text-gray-600">Selecciona una opción</p>;
     }
@@ -209,55 +227,25 @@ export default function LoginCliente() {
   return (
     <div className="min-h-screen bg-gray-100 pt-[140px] px-6">
       <div className="flex gap-6">
+        {/* 📌 Menú lateral */}
         <div className="w-1/4 bg-white p-6 shadow-md rounded-lg h-fit">
           <h1 className="text-lg font-bold text-red-600 mb-6">
             Bienvenido, {nombreUsuario} 👋
           </h1>
 
           <div className="space-y-3">
-            <button
-              onClick={() => setSeccionActiva("perfil")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Ver Perfil
-            </button>
-            <button
-              onClick={() => setSeccionActiva("historial")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Historial de Compras
-            </button>
-            <button
-              onClick={() => setSeccionActiva("carrito")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Métodos de Pago
-            </button>
-            <button
-              onClick={() => setSeccionActiva("direcciones")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Direcciones de Envío
-            </button>
-            <button
-              onClick={() => setSeccionActiva("ofertas")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Promociones y Ofertas
-            </button>
-            <button
-              onClick={handleLogout}
-              className="w-full bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700"
-            >
-              Cerrar Sesión
-            </button>
+            <button onClick={() => setSeccionActiva("perfil")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Ver Perfil</button>
+            <button onClick={() => setSeccionActiva("historial")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Historial de Compras</button>
+            <button onClick={() => setSeccionActiva("carrito")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Mi Carrito</button>
+            <button onClick={() => setSeccionActiva("metodosPago")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Métodos de Pago</button>
+            <button onClick={() => setSeccionActiva("direcciones")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Direcciones de Envío</button>
+            <button onClick={() => setSeccionActiva("ofertas")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Promociones y Ofertas</button>
+            <button onClick={handleLogout} className="w-full bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700">Cerrar Sesión</button>
           </div>
         </div>
 
+        {/* 📌 Contenido principal */}
         <div className="w-3/4 bg-white p-8 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">
-            Sección activa
-          </h2>
           {renderContenido()}
         </div>
       </div>
