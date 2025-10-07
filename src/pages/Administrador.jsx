@@ -226,6 +226,224 @@ export default function Administrador() {
     }
   };
 
+
+  function ReporteVentas() {
+    const [granularity, setGranularity] = React.useState('day');
+    const [start, setStart] = React.useState('');
+    const [end, setEnd] = React.useState('');
+    const [data, setData] = React.useState([]);
+    const [msg, setMsg] = React.useState('');
+
+    const fetchReport = async () => {
+      try {
+        const params = new URLSearchParams({ granularity });
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        const res = await axios.get(`http://localhost:3001/reports/sales?${params.toString()}`);
+        setData(res.data);
+        setMsg('');
+      } catch (e) {
+        setMsg('No se pudo obtener el reporte.');
+      }
+    };
+
+    const formatoSoles = (v) => `S/ ${Number(v).toFixed(2)}`;
+    const formatoUSD = (v) => `$ ${Number(v).toFixed(2)}`;
+
+    return (
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Reporte de Ventas</h2>
+        <div className="flex flex-wrap gap-3 mb-4">
+          <select value={granularity} onChange={(e) => setGranularity(e.target.value)} className="border rounded px-2 py-1">
+            <option value="day">Por día</option>
+            <option value="week">Por semana</option>
+            <option value="month">Por mes</option>
+            <option value="year">Por año</option>
+          </select>
+          <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="border rounded px-2 py-1" />
+          <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="border rounded px-2 py-1" />
+          <button onClick={fetchReport} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Generar</button>
+        </div>
+
+        {msg && <p className="text-red-600 mb-2">{msg}</p>}
+
+        {data.length === 0 ? (
+          <p>No hay datos para mostrar.</p>
+        ) : (
+          <table className="min-w-full table-auto border">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="px-4 py-2 border">Periodo</th>
+                <th className="px-4 py-2 border">Pedidos</th>
+                <th className="px-4 py-2 border">Total (S/)</th>
+                <th className="px-4 py-2 border">Total (USD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((r, i) => (
+                <tr key={i} className="text-center">
+                  <td className="px-4 py-2 border">{r.periodo}</td>
+                  <td className="px-4 py-2 border">{r.pedidos}</td>
+                  <td className="px-4 py-2 border">{formatoSoles(r.total_pen)}</td>
+                  <td className="px-4 py-2 border">{formatoUSD(r.total_usd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    );
+  }
+
+  function RevisarVentas() {
+    const [ventas, setVentas] = React.useState([]);
+    const [loading, setLoading] = React.useState(false);
+    const [msg, setMsg] = React.useState('');
+    const [start, setStart] = React.useState('');
+    const [end, setEnd] = React.useState('');
+    const [q, setQ] = React.useState('');
+    const [expanded, setExpanded] = React.useState({}); // filas desplegadas
+
+    const fetchVentas = async () => {
+      try {
+        setLoading(true);
+        setMsg('');
+        const params = new URLSearchParams();
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        if (q) params.append('q', q);
+        params.append('limit', '200');
+
+        const res = await axios.get(`http://localhost:3001/orders?${params.toString()}`);
+        setVentas(res.data || []);
+      } catch (e) {
+        console.error(e);
+        setMsg('No se pudieron cargar las ventas');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    React.useEffect(() => {
+      fetchVentas();
+    }, []); // carga inicial
+
+    const fmtSoles = (v) => `S/ ${Number(v || 0).toFixed(2)}`;
+    const fmtUSD = (v) => `$ ${Number(v || 0).toFixed(2)}`;
+
+    const nombreComprador = (v) => {
+      // Mostrar preferentemente datos de sesión; si no, los guest
+      if (v.usuario_email || v.usuario_dni) {
+        return v.usuario_email || v.usuario_dni;
+      }
+      if (v.guest_nombre || v.guest_email) {
+        return `${v.guest_nombre || ''}${v.guest_email ? ' (' + v.guest_email + ')' : ''}`.trim();
+      }
+      return '—';
+    };
+
+    const toggle = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+
+    return (
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Revisar Ventas</h2>
+
+        {/* Filtros */}
+        <div className="flex flex-wrap gap-3 mb-4">
+          <input type="date" value={start} onChange={e => setStart(e.target.value)}
+            className="border rounded px-2 py-1" />
+          <input type="date" value={end} onChange={e => setEnd(e.target.value)}
+            className="border rounded px-2 py-1" />
+          <input type="text" value={q} onChange={e => setQ(e.target.value)}
+            placeholder="Buscar por email/nombre/DNI/PayPal ID"
+            className="border rounded px-2 py-1 w-64" />
+          <button onClick={fetchVentas}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+            Buscar
+          </button>
+        </div>
+
+        {loading && <p>Cargando...</p>}
+        {msg && <p className="text-red-600 mb-2">{msg}</p>}
+
+        {(!loading && ventas.length === 0) ? (
+          <p>No hay ventas.</p>
+        ) : (
+          <table className="min-w-full table-auto border">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="px-3 py-2 border text-left">Fecha</th>
+                <th className="px-3 py-2 border text-left">PayPal Order</th>
+                <th className="px-3 py-2 border text-left">Comprador</th>
+                <th className="px-3 py-2 border text-right">Total (S/)</th>
+                <th className="px-3 py-2 border text-right">Total (USD)</th>
+                <th className="px-3 py-2 border text-left">Estado</th>
+                <th className="px-3 py-2 border text-center">Ítems</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ventas.map(v => (
+                <React.Fragment key={v.id}>
+                  <tr className="hover:bg-gray-50">
+                    <td className="px-3 py-2 border">{new Date(v.fecha).toLocaleString()}</td>
+                    <td className="px-3 py-2 border">{v.paypal_order_id || '—'}</td>
+                    <td className="px-3 py-2 border">{nombreComprador(v)}</td>
+                    <td className="px-3 py-2 border text-right">{fmtSoles(v.total_pen)}</td>
+                    <td className="px-3 py-2 border text-right">{fmtUSD(v.total_usd)}</td>
+                    <td className="px-3 py-2 border">{v.estado || '—'}</td>
+                    <td className="px-3 py-2 border text-center">
+                      <button
+                        onClick={() => toggle(v.id)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {expanded[v.id] ? 'Ocultar' : 'Ver'}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {expanded[v.id] && (
+                    <tr>
+                      <td className="px-3 py-2 border bg-gray-50" colSpan={7}>
+                        {(!v.items || v.items.length === 0) ? (
+                          <p className="text-sm text-gray-600">Sin ítems.</p>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full table-auto border">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="px-2 py-1 border text-left">Producto</th>
+                                  <th className="px-2 py-1 border text-right">Precio (S/)</th>
+                                  <th className="px-2 py-1 border text-right">Cantidad</th>
+                                  <th className="px-2 py-1 border text-right">Subtotal (S/)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {v.items.map(it => (
+                                  <tr key={it.id}>
+                                    <td className="px-2 py-1 border">{it.nombre}</td>
+                                    <td className="px-2 py-1 border text-right">{fmtSoles(it.precio_pen)}</td>
+                                    <td className="px-2 py-1 border text-right">{it.qty}</td>
+                                    <td className="px-2 py-1 border text-right">
+                                      {fmtSoles(Number(it.precio_pen) * Number(it.qty))}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    );
+  }
+
   const renderContenido = () => {
     switch (contenido) {
       case "perfil":
@@ -401,7 +619,7 @@ export default function Administrador() {
                   {productos.map((producto) => (
                     <tr key={producto.id} className="text-center">
                       <td className="px-4 py-2 border">{producto.nombre}</td>
-                      <td className="px-4 py-2 border">S/{producto.precio}</td>
+                      <td className="px-4 py-2 border">S/ {Number(producto.precio).toFixed(2)}</td>
                       <td className="px-4 py-2 border">
                         <button
                           onClick={() => eliminarProducto(producto.id)}
@@ -523,6 +741,13 @@ export default function Administrador() {
             )}
           </div>
         );
+
+      case "Generar Reporte de ventas":
+        return <ReporteVentas />;
+
+      case "Revisar Ventas":
+        return <RevisarVentas />;
+
 
       default:
         return <p className="text-gray-600">{contenido}</p>;
