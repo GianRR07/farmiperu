@@ -12,6 +12,11 @@ export default function Navbar() {
   const [rolUsuario, setRolUsuario] = useState(null);
   const { items, removeItem, totalPrice, totalItems, clearCart } = useCart();
   const [showPay, setShowPay] = useState(false);
+  const [guestNombre, setGuestNombre] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestTelefono, setGuestTelefono] = useState('');
+  const [guestDni, setGuestDni] = useState('');
+
 
   // Si tus precios están en soles, convertimos a USD para sandbox (tasa demo)
   const PEN_TO_USD = 0.27; // ajusta si quieres
@@ -203,11 +208,10 @@ export default function Navbar() {
         </div>
 
         <ul
-          className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${
-            isOpen
-              ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
-              : "top-[-490px] opacity-0 pointer-events-none"
-          } md:relative md:top-0 md:opacity-100 md:pointer-events-auto px-6 md:px-0 py-4 md:py-0 z-40`}
+          className={`flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-40 w-full bg-[#e32c2c] md:bg-transparent md:static absolute left-0 md:opacity-100 transition-all duration-300 ease-in ${isOpen
+            ? "top-full opacity-100 shadow-md border-t border-[#a52a2a]"
+            : "top-[-490px] opacity-0 pointer-events-none"
+            } md:relative md:top-0 md:opacity-100 md:pointer-events-auto px-6 md:px-0 py-4 md:py-0 z-40`}
         >
           <li>
             <Link
@@ -274,9 +278,8 @@ export default function Navbar() {
       </nav>
 
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${
-          sidebarOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg border-l-4 border-red-600 transform transition-transform duration-300 z-50 flex flex-col ${sidebarOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-red-700">Carrito</h2>
@@ -324,11 +327,10 @@ export default function Navbar() {
           <button
             disabled={items.length === 0}
             onClick={() => setShowPay(true)}
-            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${
-              items.length === 0
-                ? "bg-red-300 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
-            }`}
+            className={`mt-3 w-full py-2 rounded-md font-semibold text-white transition-colors ${items.length === 0
+              ? "bg-red-300 cursor-not-allowed"
+              : "bg-red-600 hover:bg-red-700"
+              }`}
           >
             Finalizar compra
           </button>
@@ -337,6 +339,20 @@ export default function Navbar() {
               <div className="text-sm text-gray-600 mb-2">
                 Monto a pagar (USD – sandbox): <strong>${totalUSD}</strong>
               </div>
+
+              {!isLoggedIn && showPay && (
+                <div className="mb-3 grid grid-cols-1 gap-2">
+                  <input className="border rounded px-2 py-1" placeholder="Nombre completo"
+                    value={guestNombre} onChange={e => setGuestNombre(e.target.value)} />
+                  <input className="border rounded px-2 py-1" placeholder="Email"
+                    value={guestEmail} onChange={e => setGuestEmail(e.target.value)} />
+                  <input className="border rounded px-2 py-1" placeholder="Teléfono"
+                    value={guestTelefono} onChange={e => setGuestTelefono(e.target.value)} />
+                  <input className="border rounded px-2 py-1" placeholder="DNI"
+                    value={guestDni} onChange={e => setGuestDni(e.target.value)} />
+                </div>
+              )}
+
               <PayPalButtons
                 style={{ layout: "vertical" }}
                 createOrder={(data, actions) => {
@@ -350,7 +366,48 @@ export default function Navbar() {
                   });
                 }}
                 onApprove={async (data, actions) => {
-                  const details = await actions.order.capture();
+                  const details = await actions.order.capture(); // PayPal Sandbox
+
+                  // datos del payer y posible shipping de PayPal
+                  const payer = details?.payer;
+                  const shipping = details?.purchase_units?.[0]?.shipping;
+
+                  // identidad desde tu app (si hay sesión)
+                  const usuarioEmail = localStorage.getItem('email') || null;
+                  const usuarioDni = localStorage.getItem('dni') || null;
+                  const isUserLogged = !!localStorage.getItem('nombreUsuario');
+
+                  try {
+                    await fetch('http://localhost:3001/orders', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        paypalOrderId: details.id,
+                        items,                      // del CartContext (con {id,nombre,precio,qty}) en S/
+                        totalPEN: Number(totalPrice),
+                        totalUSD: Number((Number(totalPrice) * 0.27).toFixed(2)), // si conviertes para sandbox
+                        paypalCurrency: 'USD',
+                        estado: 'aprobado',
+
+                        // sesión o guest
+                        usuarioEmail: isUserLogged ? usuarioEmail : null,
+                        usuarioDni: isUserLogged ? usuarioDni : null,
+
+                        guestNombre: !isUserLogged ? guestNombre : null,
+                        guestEmail: !isUserLogged ? guestEmail : null,
+                        guestTelefono: !isUserLogged ? guestTelefono : null,
+                        guestDni: !isUserLogged ? guestDni : null,
+
+                        // respaldo PayPal
+                        paypalPayerId: payer?.payer_id || null,
+                        paypalPayerEmail: payer?.email_address || null,
+                        shippingAddressJson: shipping ? JSON.stringify(shipping) : null
+                      })
+                    });
+                  } catch (e) {
+                    console.error('No se pudo guardar el pedido local:', e);
+                  }
+
                   alert(`✅ Pago aprobado: ${details.id}`);
                   clearCart();
                   setShowPay(false);
