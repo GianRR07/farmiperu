@@ -443,26 +443,30 @@ export default function Administrador() {
       </div>
     );
   }
-
   const renderContenido = () => {
     switch (contenido) {
       case "perfil":
         return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">
-              👤 Perfil del Administrador
-            </h2>
-            <p>
-              <strong>Nombre:</strong> {adminNombre}
-            </p>
-            <p>
-              <strong>Email:</strong> {adminEmail}
-            </p>
-            <p>
-              <strong>DNI:</strong> {adminDni}
-            </p>
+          <div className="p-6 rounded-xl bg-gradient-to-br from-red-50 to-white shadow-lg">
+            <div className="flex items-center gap-4">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/219/219970.png"
+                alt="perfil"
+                className="w-20 h-20 rounded-full border-2 border-red-400"
+              />
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">{adminNombre}</h2>
+                <p className="text-gray-600">👤 Administrador Responsable</p>
+              </div>
+            </div>
+            <div className="mt-6 space-y-2 text-gray-700">
+              <p><strong>Email:</strong> {adminEmail}</p>
+              <p><strong>DNI:</strong> {adminDni}</p>
+              <p><strong>Estado:</strong> Activo ✅</p>
+            </div>
           </div>
         );
+
       case "Registrar Nuevo Administrador":
         return (
           <div>

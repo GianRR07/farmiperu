@@ -243,27 +243,28 @@ export default function LoginCliente() {
           </div>
         );
 
-      case "ofertas":
+    case "ofertas":
   return (
-    <div className="space-y-5">
-      <h2 className="text-xl font-semibold mb-3">Promociones y Ofertas</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">¡Promociones Exclusivas en Productos de Salud!</h2>
 
-      <div className="bg-gradient-to-b from-red-500 to-white p-6 rounded-lg shadow-xl text-center">
-        <h3 className="text-2xl font-bold text-gray-900 mb-3">
-          ¡Compra más de 80 soles y recibe DELIVERY GRATIS!
+      <div className="border-4 border-red-500 p-8 rounded-lg shadow-lg text-center bg-white">
+        <h3 className="text-3xl font-extrabold text-red-600 mb-4">
+          ¡Aprovecha el DELIVERY GRATIS al superar los 80 soles!
         </h3>
-        <p className="text-lg text-gray-800 mb-4">
-          ¡No dejes pasar esta increíble oferta! Solo por tiempo limitado, disfruta de envío sin costo al realizar compras superiores a 80 soles.
+        <p className="text-lg text-gray-700 mb-5">
+          ¡Es tu momento de cuidar tu salud con las mejores ofertas! Solo por tiempo limitado, si compras más de 80 soles en productos de salud, ¡tu envío será totalmente gratuito!
         </p>
         <button
-          onClick={() => window.open("/", "_self")}
-          className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-semibold transition-all shadow-md"
+          onClick={() => window.open("/productos", "_self")}
+          className="bg-red-600 hover:bg-red-700 text-white text-lg px-10 py-4 rounded-full font-semibold shadow-md transition-all transform hover:scale-105"
         >
-          ¡Aprovecha esta oferta!
+          ¡Compra Ahora y Disfruta del Envío Gratis!
         </button>
       </div>
     </div>
   );
+
 
 
 
