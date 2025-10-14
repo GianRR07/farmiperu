@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import DireccionMap from "../components/DireccionMap"; // ⬅️ Tu componente del mapa
 
 export default function LoginCliente() {
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [emailUsuario, setEmailUsuario] = useState("");
   const [dniUsuario, setDniUsuario] = useState("");
-  const [seccionActiva, setSeccionActiva] = useState("");
+  const [seccionActiva, setSeccionActiva] = useState("perfil"); // ⬅️ Mostrar perfil al iniciar
+  const [direccionSeleccionada, setDireccionSeleccionada] = useState(null);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const nombre = localStorage.getItem("nombreUsuario");
@@ -22,6 +23,7 @@ export default function LoginCliente() {
       setNombreUsuario(nombre);
       setEmailUsuario(email || "");
       setDniUsuario(dni || "");
+      setSeccionActiva("perfil");
     }
   }, [navigate]);
 
@@ -30,12 +32,9 @@ export default function LoginCliente() {
     localStorage.removeItem("rolUsuario");
     localStorage.removeItem("email");
     localStorage.removeItem("dni");
-
     window.dispatchEvent(new Event("loginStateChanged"));
-
     navigate("/");
   };
-
 
   function HistorialComprasCliente({ email, dni }) {
     const [ventas, setVentas] = React.useState([]);
@@ -149,58 +148,126 @@ export default function LoginCliente() {
     );
   }
 
+  // 👇 CONTENIDO DE CADA SECCIÓN
   const renderContenido = () => {
     switch (seccionActiva) {
       case "perfil":
         return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">👤 Mi Perfil</h2>
-            <p>
-              <strong>Nombre:</strong> {nombreUsuario}
-            </p>
-            <p>
-              <strong>Email:</strong> usuariao@email.com
-            </p>
-            <p>
-              <strong>DNI:</strong> ********
-            </p>
+          <div className="p-6 rounded-xl bg-gradient-to-br from-red-50 to-white shadow-lg">
+            <div className="flex items-center gap-4">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/219/219970.png"
+                alt="perfil"
+                className="w-20 h-20 rounded-full border-2 border-red-400"
+              />
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">{nombreUsuario}</h2>
+                <p className="text-gray-600">👤 Cliente registrado</p>
+              </div>
+            </div>
+            <div className="mt-6 space-y-2 text-gray-700">
+              <p><strong>Email:</strong> {emailUsuario}</p>
+              <p><strong>DNI:</strong> {dniUsuario}</p>
+              <p><strong>Estado:</strong> Activo ✅</p>
+            </div>
           </div>
         );
+
       case "historial":
         return <HistorialComprasCliente email={emailUsuario} dni={dniUsuario} />;
 
-      case "carrito":
-        return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">🛍️ Mi Carrito</h2>
-            <p>No tienes productos en el carrito.</p>
-          </div>
-        );
+     
+
       case "metodosPago":
-        return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">💳 Métodos de Pago</h2>
-            <p>Aún no has agregado ningún método de pago.</p>
+  return (
+    <div className="space-y-5">
+      <h2 className="text-xl font-semibold mb-3">💳 Métodos de Pago</h2>
+
+      <div className="bg-blue-50 border border-blue-200 p-5 rounded-lg shadow-sm">
+        <p className="text-gray-700 mb-3 leading-relaxed">
+          En <strong>FarmiPerú</strong> usamos <span className="font-semibold">PayPal</span> como nuestro método
+          principal de pago, garantizando transacciones seguras y rápidas 🔒.
+        </p>
+        <ul className="list-disc pl-5 text-gray-600 mb-4">
+          <li>Protege tus datos y tus compras.</li>
+          <li>Permite pagar con tarjeta o saldo PayPal.</li>
+          <li>Pagos internacionales sin complicaciones.</li>
+        </ul>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <img
+            src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_74x46.jpg"
+            alt="PayPal logo"
+            className="w-32"
+          />
+          
+          {/* Este es el contenedor que coloca el texto arriba del botón */}
+          <div className="text-center sm:text-left">
+            <p className="text-gray-700 mb-2">
+              Si eres nuevo, te invito a crearte una cuenta nueva.
+            </p>
+            <button
+              onClick={() => window.open("https://www.paypal.com/signup", "_blank")}
+              className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 px-5 py-2 rounded-md font-semibold shadow-md transition-all"
+            >
+              Crear cuenta PayPal
+            </button>
           </div>
-        );
+        </div>
+      </div>
+
+      <div className="text-sm text-gray-600">
+        ¿Tienes dudas? Contáctanos para ayudarte a configurar tu pago 💬
+      </div>
+    </div>
+  );
+
+
+
       case "direcciones":
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">
-              🏠 Direcciones de Envío
-            </h2>
-            <p>No tienes direcciones guardadas.</p>
+            <h2 className="text-xl font-semibold mb-3">🏠 Direcciones de Envío</h2>
+            <p className="text-gray-600 mb-3">
+              Selecciona tu ubicación actual o busca una nueva dirección.
+            </p>
+
+            <DireccionMap onDireccionSeleccionada={setDireccionSeleccionada} />
+
+            {direccionSeleccionada && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-300 rounded-md">
+                <strong>📍 Dirección guardada:</strong>
+                <p>{direccionSeleccionada.direccion}</p>
+              </div>
+            )}
           </div>
         );
-      case "ofertas":
-        return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">
-              🎉 Promociones y Ofertas
-            </h2>
-            <p>No hay promociones disponibles en este momento.</p>
-          </div>
-        );
+
+    case "ofertas":
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">¡Promociones Exclusivas en Productos de Salud!</h2>
+
+      <div className="border-4 border-red-500 p-8 rounded-lg shadow-lg text-center bg-white">
+        <h3 className="text-3xl font-extrabold text-red-600 mb-4">
+          ¡Aprovecha el DELIVERY GRATIS al superar los 80 soles!
+        </h3>
+        <p className="text-lg text-gray-700 mb-5">
+          ¡Es tu momento de cuidar tu salud con las mejores ofertas! Solo por tiempo limitado, si compras más de 80 soles en productos de salud, ¡tu envío será totalmente gratuito!
+        </p>
+        <button
+          onClick={() => window.open("/productos", "_self")}
+          className="bg-red-600 hover:bg-red-700 text-white text-lg px-10 py-4 rounded-full font-semibold shadow-md transition-all transform hover:scale-105"
+        >
+          ¡Compra Ahora y Disfruta del Envío Gratis!
+        </button>
+      </div>
+    </div>
+  );
+
+
+
+
       default:
         return <p className="text-gray-600">Selecciona una opción</p>;
     }
@@ -209,55 +276,25 @@ export default function LoginCliente() {
   return (
     <div className="min-h-screen bg-gray-100 pt-[140px] px-6">
       <div className="flex gap-6">
+        {/* 📌 Menú lateral */}
         <div className="w-1/4 bg-white p-6 shadow-md rounded-lg h-fit">
           <h1 className="text-lg font-bold text-red-600 mb-6">
             Bienvenido, {nombreUsuario} 👋
           </h1>
 
           <div className="space-y-3">
-            <button
-              onClick={() => setSeccionActiva("perfil")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Ver Perfil
-            </button>
-            <button
-              onClick={() => setSeccionActiva("historial")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Historial de Compras
-            </button>
-            <button
-              onClick={() => setSeccionActiva("carrito")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Métodos de Pago
-            </button>
-            <button
-              onClick={() => setSeccionActiva("direcciones")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Direcciones de Envío
-            </button>
-            <button
-              onClick={() => setSeccionActiva("ofertas")}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
-            >
-              Promociones y Ofertas
-            </button>
-            <button
-              onClick={handleLogout}
-              className="w-full bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700"
-            >
-              Cerrar Sesión
-            </button>
+            <button onClick={() => setSeccionActiva("perfil")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Ver Perfil</button>
+            <button onClick={() => setSeccionActiva("historial")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Historial de Compras</button>
+            
+            <button onClick={() => setSeccionActiva("metodosPago")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Métodos de Pago</button>
+            <button onClick={() => setSeccionActiva("direcciones")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Direcciones de Envío</button>
+            <button onClick={() => setSeccionActiva("ofertas")} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">Promociones y Ofertas</button>
+            <button onClick={handleLogout} className="w-full bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700">Cerrar Sesión</button>
           </div>
         </div>
 
+        {/* 📌 Contenido principal */}
         <div className="w-3/4 bg-white p-8 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">
-            Sección activa
-          </h2>
           {renderContenido()}
         </div>
       </div>
